@@ -78,9 +78,7 @@
             touch-action: none;
         }
 
-        /* Allow copying useful readouts (SOS coords, log, morse output)
-           even though the rest of the UI has user-select disabled to
-           avoid accidental text selection while dragging the knobs. */
+        /* Allow copying useful readouts */
         #commsLog, #freqDisplay, #morseCodeOutput {
             user-select: text;
             -webkit-user-select: text;
@@ -109,14 +107,20 @@
                 184
             </div>
             <div>
-                <h1 class="text-base sm:text-lg font-extrabold text-white tracking-wider flex items-center gap-2">
+                <h1 id="hdrTitle" class="text-base sm:text-lg font-extrabold text-white tracking-wider flex items-center gap-2">
                     محاكي اللاسلكي <span class="text-tactical-accent">TAC-184</span>
                 </h1>
-                <p class="text-[11px] text-gray-400 font-mono">نظام الاتصالات الميدانية - FREQ 184.000 MHz</p>
+                <p id="hdrSubtitle" class="text-[11px] text-gray-400 font-mono">نظام الاتصالات الميدانية - FREQ 184.000 MHz</p>
             </div>
         </div>
 
         <div class="flex items-center gap-2">
+            <!-- Language Switcher Button -->
+            <button id="langToggleBtn" onclick="cycleLanguage()" class="px-3 py-1.5 rounded-xl border border-gray-700 bg-gray-900 text-xs font-semibold text-gray-300 hover:text-tactical-accent transition flex items-center gap-1.5">
+                <i class="fa-solid fa-globe text-xs text-tactical-accent"></i>
+                <span id="langText">العربية</span>
+            </button>
+
             <!-- Night Vision Switch -->
             <button id="nvgToggleBtn" onclick="toggleNightVision()" class="px-3 py-1.5 rounded-xl border border-gray-700 bg-gray-900 text-xs font-semibold text-gray-300 hover:text-tactical-accent transition flex items-center gap-1.5">
                 <i class="fa-solid fa-eye text-xs"></i>
@@ -137,17 +141,16 @@
         <!-- WALKIETALKIE DEVICE CHASSIS -->
         <div class="w-full max-w-[380px] bg-gradient-to-b from-tactical-metal via-[#172025] to-[#0e1316] p-4 sm:p-5 rounded-3xl border-2 border-gray-700 shadow-2xl flex flex-col space-y-4 relative">
             
-            <!-- TOP HARDWARE CONTROLS: Clean Rotary Volume Knob & Antenna -->
+            <!-- TOP HARDWARE CONTROLS -->
             <div class="w-full flex justify-between items-end px-2 pt-1">
                 
-                <!-- LEFT: Clean Physical Volume Knob (No Green Line) -->
+                <!-- LEFT: Physical Volume Knob -->
                 <div class="flex flex-col items-center">
-                    <span class="text-[10px] font-mono font-bold text-tactical-accent mb-1 tracking-wider">VOL KNOB (سحب/لف)</span>
+                    <span id="lblVolKnob" class="text-[10px] font-mono font-bold text-tactical-accent mb-1 tracking-wider">VOL KNOB (سحب/لف)</span>
                     <div id="volKnob" 
                          class="knob-drag-area relative w-14 h-14 rounded-full bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-700 border-2 border-gray-600 shadow-xl cursor-ns-resize flex items-center justify-center transition-transform duration-75 active:scale-95"
                          title="اسحب لأعلى/لأسفل أو استخدم عجلة الماوس للتحكم بالصوت">
                         
-                        <!-- Clean Digital Volume Inner Screen (No Green Stroke Line) -->
                         <div class="w-10 h-10 rounded-full bg-black border border-gray-700 flex items-center justify-center text-xs text-tactical-accent font-mono font-bold shadow-inner pointer-events-none" id="volKnobVal">
                             80%
                         </div>
@@ -159,7 +162,7 @@
 
                 <!-- CENTER: Channel Dial -->
                 <div class="flex flex-col items-center">
-                    <span class="text-[10px] font-mono font-bold text-gray-400 mb-1 tracking-wider">CH DIAL</span>
+                    <span id="lblChDial" class="text-[10px] font-mono font-bold text-gray-400 mb-1 tracking-wider">CH DIAL</span>
                     <div id="chDial" onclick="nextChannel()" class="relative w-14 h-14 rounded-full bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-700 border-2 border-gray-600 shadow-xl cursor-pointer active:scale-95 transition flex items-center justify-center">
                         <div class="w-1 h-5 bg-tactical-amber rounded-full absolute top-1 shadow-[0_0_6px_#ffb700]"></div>
                         <div class="w-8 h-8 rounded-full bg-black/90 border border-gray-700 flex items-center justify-center text-xs text-tactical-amber font-mono font-bold" id="chDialVal">
@@ -170,21 +173,18 @@
 
                 <!-- RIGHT: Interactive Antenna Control -->
                 <div class="flex flex-col items-center">
-                    <span class="text-[10px] font-mono font-bold text-tactical-accent mb-1 tracking-wider">ANT-VOL</span>
+                    <span id="lblAntVol" class="text-[10px] font-mono font-bold text-tactical-accent mb-1 tracking-wider">ANT-VOL</span>
                     
                     <div id="antennaContainer" 
                          class="knob-drag-area relative w-8 h-20 bg-gray-900 rounded-t-xl border-2 border-gray-700 cursor-ns-resize flex justify-center shadow-inner"
                          title="اسحب لأعلى/لأسفل للتحكم بالصوت">
                         
-                        <!-- Antenna Shaft Base -->
                         <div class="absolute bottom-0 w-3.5 h-full bg-gradient-to-r from-gray-800 via-gray-600 to-gray-900 rounded-t-sm"></div>
 
-                        <!-- Antenna Top Bulb -->
                         <div class="absolute -top-3 w-6 h-3.5 bg-gray-700 border border-gray-500 rounded-t-full flex items-center justify-center">
                             <div id="antennaLed" class="w-2 h-2 rounded-full bg-tactical-accent glow-green"></div>
                         </div>
 
-                        <!-- Knurled Sliding Ring -->
                         <div id="antennaCollar" 
                              class="absolute w-7 h-4 rounded border border-tactical-accent bg-tactical-accent/30 shadow-[0_0_8px_rgba(0,255,102,0.5)] transition-all duration-75 flex items-center justify-center pointer-events-none"
                              style="bottom: 80%;">
@@ -198,7 +198,6 @@
             <div class="w-full bg-tactical-screen rounded-2xl border-2 border-emerald-900/70 p-3.5 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] overflow-hidden relative">
                 <div class="crt-overlay absolute inset-0 z-10"></div>
                 
-                <!-- Screen Header info -->
                 <div class="flex justify-between items-center text-xs font-mono text-emerald-400/90 mb-1 border-b border-emerald-900/50 pb-1">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -212,23 +211,21 @@
                     </div>
                 </div>
 
-                <!-- Main Frequency Display -->
                 <div class="flex justify-between items-baseline my-1">
                     <div>
-                        <div class="text-[10px] text-emerald-500/80 font-mono">التردد الميداني (MHz)</div>
+                        <div id="lblFreq" class="text-[10px] text-emerald-500/80 font-mono">التردد الميداني (MHz)</div>
                         <div id="freqDisplay" class="text-3xl font-mono font-extrabold text-tactical-accent tracking-wider">
                             184.000
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-[10px] text-emerald-500/80 font-mono">القناة</div>
+                        <div id="lblChannel" class="text-[10px] text-emerald-500/80 font-mono">القناة</div>
                         <div id="channelDisplay" class="text-2xl font-mono font-bold text-tactical-amber">
                             01<span class="text-xs font-normal text-gray-400"> - CH</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Live Waveform Canvas -->
                 <div class="relative w-full h-14 bg-black/70 rounded-xl border border-emerald-900/60 my-1.5 overflow-hidden flex items-center justify-center">
                     <canvas id="waveformCanvas" class="w-full h-full block z-0"></canvas>
                     <div id="screenStatusOverlay" class="absolute text-center z-10 text-xs font-mono text-emerald-400 tracking-widest bg-black/80 px-2.5 py-0.5 rounded-md border border-emerald-800/60">
@@ -236,7 +233,6 @@
                     </div>
                 </div>
 
-                <!-- Audio Level dB Meter -->
                 <div class="w-full space-y-1">
                     <div class="flex justify-between text-[10px] font-mono text-emerald-500/90">
                         <span>0%</span>
@@ -251,25 +247,21 @@
 
             <!-- FRONT BUTTONS PANEL -->
             <div class="grid grid-cols-4 gap-2">
-                <!-- SOS Button -->
                 <button id="sosBtn" onclick="triggerSOS()" class="col-span-1 bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white p-2 rounded-xl border border-red-500 shadow-md font-bold text-xs flex flex-col items-center justify-center active:scale-95 transition">
                     <i class="fa-solid fa-triangle-exclamation text-sm mb-1"></i>
-                    <span>طوارئ SOS</span>
+                    <span id="txtSosBtn">طوارئ SOS</span>
                 </button>
 
-                <!-- Scan Channels -->
                 <button onclick="scanChannels()" class="col-span-1 bg-tactical-panel hover:bg-gray-800 border border-gray-700 p-2 rounded-xl text-xs font-semibold text-gray-200 flex flex-col items-center justify-center active:scale-95 transition">
                     <i class="fa-solid fa-radar text-tactical-accent text-sm mb-1"></i>
-                    <span>مسح SCAN</span>
+                    <span id="txtScanBtn">مسح SCAN</span>
                 </button>
 
-                <!-- Scrambler Encryption -->
                 <button id="scramblerBtn" onclick="toggleScrambler()" class="col-span-1 bg-tactical-panel hover:bg-gray-800 border border-gray-700 p-2 rounded-xl text-xs font-semibold text-gray-200 flex flex-col items-center justify-center active:scale-95 transition">
                     <i class="fa-solid fa-lock text-tactical-amber text-sm mb-1" id="scramblerIcon"></i>
                     <span id="scramblerText">تشفير OFF</span>
                 </button>
 
-                <!-- Quick Voice Memo -->
                 <button id="recordMemoBtn" onclick="toggleVoiceRecord()" class="col-span-1 bg-tactical-panel hover:bg-gray-800 border border-gray-700 p-2 rounded-xl text-xs font-semibold text-gray-200 flex flex-col items-center justify-center active:scale-95 transition">
                     <i class="fa-solid fa-circle-dot text-red-400 text-sm mb-1" id="recordIcon"></i>
                     <span id="recordText">تسجيل 5s</span>
@@ -278,12 +270,12 @@
 
             <!-- SPEAKER GRILLE -->
             <div class="w-full h-11 bg-black/80 rounded-xl border border-gray-800 speaker-mesh flex items-center justify-center">
-                <span class="text-[10px] font-mono text-gray-500 tracking-widest bg-black/90 px-3 py-0.5 rounded border border-gray-800">
+                <span id="speakerText" class="text-[10px] font-mono text-gray-500 tracking-widest bg-black/90 px-3 py-0.5 rounded border border-gray-800">
                     HIGH-POWER SPEAKER 184
                 </span>
             </div>
 
-            <!-- PTT (PRESS TO TALK) BUTTON -->
+            <!-- PTT BUTTON -->
             <div class="w-full">
                 <button id="pttBtn" 
                         onmousedown="startTransmission()" 
@@ -293,9 +285,9 @@
                         ontouchend="stopTransmission(event)"
                         class="w-full bg-gradient-to-r from-emerald-600 via-tactical-accent to-emerald-600 hover:brightness-110 text-black font-extrabold py-3.5 px-4 rounded-xl shadow-lg border border-emerald-300 text-base flex items-center justify-center gap-2 transition active:scale-[0.98]">
                     <i class="fa-solid fa-microphone text-xl"></i>
-                    <span>اضغط واستمر للتحدث (PTT)</span>
+                    <span id="pttText">اضغط واستمر للتحدث (PTT)</span>
                 </button>
-                <div class="text-center text-xs font-mono text-gray-400 mt-1.5">
+                <div class="text-center text-xs font-mono text-gray-400 mt-1.5" id="pttHint">
                     أو اضغط على <kbd class="px-1.5 py-0.5 bg-gray-800 rounded border border-gray-700 text-white">Spacebar</kbd>
                 </div>
             </div>
@@ -307,40 +299,61 @@
             <div class="flex items-center justify-between mb-3 border-b border-tactical-border pb-2">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-tower-cell text-tactical-accent text-base"></i>
-                    <h2 class="text-sm font-bold text-white">مرسل شفرة مورس التاكتيكي</h2>
+                    <h2 id="hdrMorse" class="text-sm font-bold text-white">مرسل شفرة مورس التاكتيكي</h2>
                 </div>
-                <span class="text-xs font-mono bg-tactical-accent/10 text-tactical-accent px-2 py-0.5 rounded-md border border-tactical-accent/30">
+                <span id="morseBadge" class="text-xs font-mono bg-tactical-accent/10 text-tactical-accent px-2 py-0.5 rounded-md border border-tactical-accent/30">
                     MORSE TX
                 </span>
             </div>
 
-            <!-- Target Channel Selector for Morse -->
+            <!-- Target Channel Selector -->
             <div class="mb-3">
-                <label class="block text-xs text-gray-400 font-mono mb-1">القناة المستهدفة للبث:</label>
+                <label id="lblTargetChan" class="block text-xs text-gray-400 font-mono mb-1">القناة المستهدفة للبث:</label>
                 <select id="morseTargetChannel" class="w-full bg-black/80 border border-gray-700 rounded-xl px-3 py-2 text-xs text-tactical-amber font-mono focus:border-tactical-accent outline-none">
-                    <!-- Options generated dynamically via JS -->
                 </select>
+            </div>
+
+            <!-- Transmission Options: Mode Selection & Timer -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                <div>
+                    <label id="lblMorseMode" class="block text-xs text-gray-400 font-mono mb-1">نمط الإرسال:</label>
+                    <select id="morseModeSelect" onchange="handleMorseModeChange()" class="w-full bg-black/80 border border-gray-700 rounded-xl px-3 py-2 text-xs text-tactical-accent font-mono focus:border-tactical-accent outline-none">
+                        <option value="immediate" id="optModeImmediate">إرسال فوري</option>
+                        <option value="delay" id="optModeDelay">تأخير زمني (مؤقت)</option>
+                        <option value="continuous" id="optModeContinuous">بث مستمر (تكرار)</option>
+                    </select>
+                </div>
+                <div id="delayInputContainer" class="hidden">
+                    <label id="lblDelay" class="block text-xs text-gray-400 font-mono mb-1">وقت التأخير (بالثواني):</label>
+                    <input type="number" id="morseDelayInput" value="5" min="1" max="3600" class="w-full bg-black/80 border border-gray-700 rounded-xl px-3 py-2 text-xs text-tactical-accent font-mono focus:border-tactical-accent outline-none" placeholder="5">
+                </div>
             </div>
 
             <!-- Text Message Input -->
             <div class="mb-3">
-                <label class="block text-xs text-gray-400 font-mono mb-1">الرسالة الميدانية (عربي / English / أرقام):</label>
+                <label id="lblMorseInput" class="block text-xs text-gray-400 font-mono mb-1">الرسالة الميدانية (عربي / English / Русский / أرقام):</label>
                 <textarea id="morseTextInput" rows="2" placeholder="اكتب النص هنا (مثال: SOS أو موقع الهدف)..." class="w-full bg-black/80 border border-gray-700 rounded-xl p-3 text-xs text-white focus:border-tactical-accent outline-none resize-none font-sans"></textarea>
             </div>
 
             <!-- Real-Time Morse Output Display -->
             <div class="mb-3">
-                <div class="text-xs text-gray-400 font-mono mb-1">معاينة شفرة مورس:</div>
+                <div id="lblMorsePreview" class="text-xs text-gray-400 font-mono mb-1">معاينة شفرة مورس:</div>
                 <div id="morseCodeOutput" class="w-full min-h-[42px] bg-black/90 border border-emerald-900/70 rounded-xl p-2.5 font-mono text-tactical-accent text-xs break-all leading-relaxed flex items-center">
-                    <span class="text-gray-600 text-xs italic">تظهر الشفرة المترجمة هنا...</span>
+                    <span id="morsePreviewEmpty" class="text-gray-600 text-xs italic">تظهر الشفرة المترجمة هنا...</span>
                 </div>
             </div>
 
-            <!-- Transmit Morse Audio Button -->
-            <button id="transmitMorseBtn" onclick="transmitMorseCode()" class="w-full bg-gradient-to-r from-tactical-amber to-yellow-600 hover:brightness-110 text-black font-extrabold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
-                <i class="fa-solid fa-paper-plane"></i>
-                <span>بث شفرة مورس عبر القناة</span>
-            </button>
+            <!-- Transmit & Stop Action Buttons -->
+            <div class="flex gap-2">
+                <button id="transmitMorseBtn" onclick="startMorseTransmissionProcess()" class="flex-1 bg-gradient-to-r from-tactical-amber to-yellow-600 hover:brightness-110 text-black font-extrabold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span id="txtTransmitBtn">بث شفرة مورس عبر القناة</span>
+                </button>
+                <button id="stopMorseBtn" onclick="stopContinuousMorse()" class="hidden bg-gradient-to-r from-red-600 to-red-800 hover:brightness-110 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
+                    <i class="fa-solid fa-stop"></i>
+                    <span id="txtStopMorseBtn">إيقاف البث</span>
+                </button>
+            </div>
         </div>
 
         <!-- COMMUNICATIONS FEED LOG -->
@@ -348,18 +361,22 @@
             <div class="flex items-center justify-between mb-2 border-b border-tactical-border pb-2">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-list-check text-tactical-amber text-sm"></i>
-                    <h3 class="text-sm font-bold text-white">سجل اتصالات اللاسلكي</h3>
+                    <h3 id="hdrLog" class="text-sm font-bold text-white">سجل اتصالات اللاسلكي</h3>
                 </div>
-                <button onclick="clearCommsLog()" class="text-xs text-gray-400 hover:text-red-400 transition">
-                    مسح السجل
-                </button>
+                <div class="flex items-center gap-3">
+                    <button onclick="printCommsLog()" class="text-xs text-tactical-accent hover:text-white transition flex items-center gap-1">
+                        <i class="fa-solid fa-print"></i>
+                        <span id="txtPrintLog">طباعة السجل</span>
+                    </button>
+                    <button onclick="clearCommsLog()" class="text-xs text-gray-400 hover:text-red-400 transition flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span id="txtClearLog">مسح السجل</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Log Messages Container -->
             <div id="commsLog" class="h-44 overflow-y-auto space-y-2 pr-1 text-xs font-mono">
-                <div class="p-2 rounded-lg bg-black/50 border-r-2 border-tactical-accent text-gray-300">
-                    <span class="text-tactical-accent font-bold">[184.000 MHz]</span> تم تشغيل المحاكي. التمرير الرأسي وعجلة الصوت مفعّلة بنجاح.
-                </div>
             </div>
         </div>
 
@@ -371,7 +388,7 @@
             محاكي اللاسلكي الميداني <span class="text-tactical-accent font-bold">184</span> &copy; 2026
         </div>
         <div class="flex items-center gap-2">
-            <span>تم التطوير بواسطة:</span>
+            <span id="txtDevBy">تم التطوير بواسطة:</span>
             <a href="https://www.instagram.com/hki_184/?hl=ar" target="_blank" rel="noopener noreferrer" class="text-tactical-accent hover:text-white font-bold flex items-center gap-1.5 bg-tactical-panel px-3 py-1 rounded-lg border border-tactical-accent/40 hover:border-tactical-accent transition shadow-sm">
                 <i class="fa-brands fa-instagram text-pink-500 text-sm"></i>
                 <span>hakky</span>
@@ -381,15 +398,20 @@
 
     <script>
         // Global App State
+        let currentLanguage = 'ar'; // Languages: 'ar', 'en', 'ru'
         let currentChannel = 1;
         const totalChannels = 16;
-        let masterVolume = 0.80; // 80% Default
+        let masterVolume = 0.80;
         let isTransmitting = false;
         let isSOSActive = false;
         let isNightVision = false;
         let isMuted = false;
         let isScrambled = false;
         let sosInterval = null;
+
+        // Morse Options State
+        let isContinuousMorseActive = false;
+        let morseDelayTimer = null;
 
         // Web Audio API Context & Nodes
         let audioCtx = null;
@@ -402,6 +424,145 @@
         let audioChunks = [];
         let recordedAudioBlob = null;
 
+        // Multilingual Translation Dictionary
+        const translations = {
+            ar: {
+                dir: 'rtl',
+                title: 'محاكي اللاسلكي TAC-184',
+                subtitle: 'نظام الاتصالات الميدانية - FREQ 184.000 MHz',
+                langName: 'العربية',
+                normalMode: 'عادي',
+                nightVision: 'رؤية ليلية',
+                micActive: 'المايك نشط',
+                volKnobLabel: 'VOL KNOB (سحب/لف)',
+                chDialLabel: 'CH DIAL',
+                antVolLabel: 'ANT-VOL',
+                freqLabel: 'التردد الميداني (MHz)',
+                chanLabel: 'القناة',
+                statusRx: 'استقبال RX - جاهز',
+                statusTx: 'إرسال TX - بث حي',
+                sosBtn: 'طوارئ SOS',
+                scanBtn: 'مسح SCAN',
+                scramblerOn: 'تشفير ON',
+                scramblerOff: 'تشفير OFF',
+                recordText: 'تسجيل 5s',
+                recordPlay: 'إعادة بث',
+                recordRecording: 'جاري التسجيل...',
+                speakerText: 'HIGH-POWER SPEAKER 184',
+                pttText: 'اضغط واستمر للتحدث (PTT)',
+                pttHint: 'أو اضغط على Spacebar',
+                morseHeader: 'مرسل شفرة مورس التاكتيكي',
+                morseBadge: 'MORSE TX',
+                targetChan: 'القناة المستهدفة للبث:',
+                morseInputLabel: 'الرسالة الميدانية (عربي / English / Русский / أرقام):',
+                morsePlaceholder: 'اكتب النص هنا (مثال: SOS أو موقع الهدف)...',
+                morsePreview: 'معاينة شفرة مورس:',
+                morsePreviewEmpty: 'تظهر الشفرة المترجمة هنا...',
+                morseModeLabel: 'نمط الإرسال:',
+                modeImmediate: 'إرسال فوري',
+                modeDelay: 'تأخير زمني (مؤقت)',
+                modeContinuous: 'بث مستمر (تكرار)',
+                delayLabel: 'وقت التأخير (بالثواني):',
+                transmitBtn: 'بث شفرة مورس عبر القناة',
+                stopMorseBtn: 'إيقاف البث',
+                logHeader: 'سجل اتصالات اللاسلكي',
+                clearLog: 'مسح السجل',
+                printLog: 'طباعة السجل',
+                logStartMsg: '[184.000 MHz] تم تشغيل المحاكي. التمرير الرأسي وعجلة الصوت مفعّلة بنجاح.',
+                developedBy: 'تم التطوير بواسطة:'
+            },
+            en: {
+                dir: 'ltr',
+                title: 'TAC-184 Radio Simulator',
+                subtitle: 'Tactical Field Comms System - FREQ 184.000 MHz',
+                langName: 'English',
+                normalMode: 'Normal',
+                nightVision: 'Night Vision',
+                micActive: 'Mic Active',
+                volKnobLabel: 'VOL KNOB (Drag/Scroll)',
+                chDialLabel: 'CH DIAL',
+                antVolLabel: 'ANT-VOL',
+                freqLabel: 'Field Frequency (MHz)',
+                chanLabel: 'Channel',
+                statusRx: 'RX Standby - Ready',
+                statusTx: 'TX Transmitting - Live',
+                sosBtn: 'Emergency SOS',
+                scanBtn: 'SCAN Freq',
+                scramblerOn: 'Encrypt ON',
+                scramblerOff: 'Encrypt OFF',
+                recordText: 'Record 5s',
+                recordPlay: 'Replay Voice',
+                recordRecording: 'Recording...',
+                speakerText: 'HIGH-POWER SPEAKER 184',
+                pttText: 'Press & Hold To Talk (PTT)',
+                pttHint: 'Or press Spacebar',
+                morseHeader: 'Tactical Morse Transmitter',
+                morseBadge: 'MORSE TX',
+                targetChan: 'Target Channel For TX:',
+                morseInputLabel: 'Field Message (Arabic / English / Русский / Digits):',
+                morsePlaceholder: 'Type message here (e.g. SOS or Target Coords)...',
+                morsePreview: 'Morse Preview:',
+                morsePreviewEmpty: 'Translated Morse code appears here...',
+                morseModeLabel: 'Transmission Mode:',
+                modeImmediate: 'Immediate Send',
+                modeDelay: 'Delayed Send (Timer)',
+                modeContinuous: 'Continuous Loop',
+                delayLabel: 'Delay Time (Seconds):',
+                transmitBtn: 'Transmit Morse Code',
+                stopMorseBtn: 'Stop Transmission',
+                logHeader: 'Comms Activity Log',
+                clearLog: 'Clear Log',
+                printLog: 'Print Log',
+                logStartMsg: '[184.000 MHz] Simulator initialized. Volume wheel & scrolling active.',
+                developedBy: 'Developed by:'
+            },
+            ru: {
+                dir: 'ltr',
+                title: 'Симулятор рации TAC-184',
+                subtitle: 'Тактическая система связи - FREQ 184.000 МГц',
+                langName: 'Русский',
+                normalMode: 'Обычный',
+                nightVision: 'ПНВ',
+                micActive: 'Мик. активен',
+                volKnobLabel: 'ГРОМКОСТЬ (Прокрутка)',
+                chDialLabel: 'КАНАЛ',
+                antVolLabel: 'АНТЕННА',
+                freqLabel: 'Рабочая частота (МГц)',
+                chanLabel: 'Канал',
+                statusRx: 'Прием RX - Готов',
+                statusTx: 'Передача TX - Эфир',
+                sosBtn: 'Сигнал SOS',
+                scanBtn: 'Сканировать',
+                scramblerOn: 'Шифр ВКЛ',
+                scramblerOff: 'Шифр ВЫКЛ',
+                recordText: 'Запись 5с',
+                recordPlay: 'Повтор',
+                recordRecording: 'Запись...',
+                speakerText: 'МОЩНЫЙ ДИНАМИК 184',
+                pttText: 'Удерживайте для связи (PTT)',
+                pttHint: 'Или нажмите Пробел',
+                morseHeader: 'Передатчик кода Морзе',
+                morseBadge: 'МОРЗЕ TX',
+                targetChan: 'Целевой канал передачи:',
+                morseInputLabel: 'Сообщение (Арабский / English / Русский / Цифры):',
+                morsePlaceholder: 'Введите текст (например: SOS или координаты)...',
+                morsePreview: 'Код Морзе:',
+                morsePreviewEmpty: 'Здесь появится переведенный код Морзе...',
+                morseModeLabel: 'Режим передачи:',
+                modeImmediate: 'Мгновенная отправка',
+                modeDelay: 'Отложенная (Таймер)',
+                modeContinuous: 'Непрерывный повтор',
+                delayLabel: 'Задержка (в секундах):',
+                transmitBtn: 'Передать код Морзе',
+                stopMorseBtn: 'Остановить',
+                logHeader: 'Журнал радиосвязи',
+                clearLog: 'Очистить',
+                printLog: 'Печать',
+                logStartMsg: '[184.000 МГц] Симулятор запущен. Прокрутка и громкость активны.',
+                developedBy: 'Разработано:'
+            }
+        };
+
         // Channel Frequency Map (MHz)
         const channelFreqs = {
             1: "184.000", 2: "184.125", 3: "184.250", 4: "184.375",
@@ -410,24 +571,89 @@
             13: "185.500", 14: "185.625", 15: "185.750", 16: "185.875"
         };
 
-        // Morse Code Dictionary (Arabic + English + Digits)
+        // Complete Morse Code Dictionary (Arabic + English + Russian + Digits)
         const morseDictionary = {
+            // English
             'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',   'E': '.',
             'F': '..-.',  'G': '--.',   'H': '....',  'I': '..',    'J': '.---',
             'K': '-.-',   'L': '.-..',  'M': '--',    'N': '-.',    'O': '---',
             'P': '.--.',  'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
             'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',  'Y': '-.--',
             'Z': '--..',
+            // Digits
             '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
             '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----',
+            // Arabic
             'ا': '.-',    'أ': '.-',    'إ': '.-',    'آ': '.-',    'ب': '-...',
             'ت': '-',     'ث': '-.-.',  'ج': '.---',  'ح': '....',  'خ': '---',
             'د': '-..',   'ذ': '--..',  'ر': '.-.',   'ز': '---.',  'س': '...',
             'ش': '----',  'ص': '-..-',  'ض': '...-',  'ط': '..-',   'ظ': '-.--',
             'ع': '.-.-',  'غ': '--.',   'ف': '..-.',  'ق': '--.-',  'ك': '-.-',
             'ل': '.-..',  'م': '--',    'ن': '-.',    'ه': '..-..', 'ة': '..-..',
-            'و': '.--',   'ي': '..',    'ى': '..',    ' ': ' / '
+            'و': '.--',   'ي': '..',    'ى': '..',
+            // Russian (Cyrillic)
+            'А': '.-',    'Б': '-...',  'В': '.--',   'Г': '--.',   'Д': '-..',
+            'Е': '.',     'Ё': '.',     'Ж': '...-',  'З': '--..',  'И': '..',
+            'Й': '.---',  'К': '-.-',   'Л': '.-..',  'М': '--',    'Н': '-.',
+            'О': '---',   'П': '.--.',  'Р': '.-.',   'С': '...',   'Т': '-',
+            'У': '..-',   'Ф': '..-.',  'Х': '....',  'Ц': '-.-.',  'Ч': '---.',
+            'Ш': '----',  'Щ': '--.-',  'Ъ': '-..-',  'Ы': '-.--',  'Ь': '-..-',
+            'Э': '..-..', 'Ю': '..--',  'Я': '.-.-',
+            ' ': ' / '
         };
+
+        // --- LANGUAGE SWITCHING SYSTEM ---
+        function cycleLanguage() {
+            if (currentLanguage === 'ar') currentLanguage = 'en';
+            else if (currentLanguage === 'en') currentLanguage = 'ru';
+            else currentLanguage = 'ar';
+
+            applyLanguageUI();
+        }
+
+        function applyLanguageUI() {
+            const langData = translations[currentLanguage];
+
+            document.documentElement.setAttribute('dir', langData.dir);
+            document.documentElement.setAttribute('lang', currentLanguage);
+
+            document.getElementById('langText').innerText = langData.langName;
+            document.getElementById('hdrTitle').innerHTML = `${langData.title} <span class="text-tactical-accent">TAC-184</span>`;
+            document.getElementById('hdrSubtitle').innerText = langData.subtitle;
+            document.getElementById('nvgStatus').innerText = isNightVision ? langData.nightVision : langData.normalMode;
+            document.getElementById('lblVolKnob').innerText = langData.volKnobLabel;
+            document.getElementById('lblChDial').innerText = langData.chDialLabel;
+            document.getElementById('lblAntVol').innerText = langData.antVolLabel;
+            document.getElementById('lblFreq').innerText = langData.freqLabel;
+            document.getElementById('lblChannel').innerText = langData.chanLabel;
+            document.getElementById('txtSosBtn').innerText = langData.sosBtn;
+            document.getElementById('txtScanBtn').innerText = langData.scanBtn;
+            document.getElementById('scramblerText').innerText = isScrambled ? langData.scramblerOn : langData.scramblerOff;
+            document.getElementById('recordText').innerText = recordedAudioBlob ? langData.recordPlay : langData.recordText;
+            document.getElementById('speakerText').innerText = langData.speakerText;
+            document.getElementById('pttText').innerText = langData.pttText;
+            document.getElementById('pttHint').innerHTML = `${langData.pttHint.split('Spacebar')[0]}<kbd class="px-1.5 py-0.5 bg-gray-800 rounded border border-gray-700 text-white">Spacebar</kbd>`;
+            document.getElementById('hdrMorse').innerText = langData.morseHeader;
+            document.getElementById('morseBadge').innerText = langData.morseBadge;
+            document.getElementById('lblTargetChan').innerText = langData.targetChan;
+            document.getElementById('lblMorseInput').innerText = langData.morseInputLabel;
+            document.getElementById('morseTextInput').placeholder = langData.morsePlaceholder;
+            document.getElementById('lblMorsePreview').innerText = langData.morsePreview;
+            document.getElementById('morsePreviewEmpty').innerText = langData.morsePreviewEmpty;
+            document.getElementById('lblMorseMode').innerText = langData.morseModeLabel;
+            document.getElementById('optModeImmediate').innerText = langData.modeImmediate;
+            document.getElementById('optModeDelay').innerText = langData.modeDelay;
+            document.getElementById('optModeContinuous').innerText = langData.modeContinuous;
+            document.getElementById('lblDelay').innerText = langData.delayLabel;
+            document.getElementById('txtTransmitBtn').innerText = langData.transmitBtn;
+            document.getElementById('txtStopMorseBtn').innerText = langData.stopMorseBtn;
+            document.getElementById('hdrLog').innerText = langData.logHeader;
+            document.getElementById('txtClearLog').innerText = langData.clearLog;
+            document.getElementById('txtPrintLog').innerText = langData.printLog;
+            document.getElementById('txtDevBy').innerText = langData.developedBy;
+
+            setupTargetChannelsSelect();
+        }
 
         function initAudioContext() {
             if (!audioCtx) {
@@ -442,24 +668,20 @@
             }
         }
 
-        // --- VOLUME CONTROL ENGINE (Clean Knob, No Green Line) ---
+        // --- VOLUME CONTROL ENGINE ---
         function updateVolume(newVol) {
             masterVolume = Math.max(0, Math.min(1, newVol));
             const percent = Math.round(masterVolume * 100);
 
-            // Update Volume Knob Percentage Text (Only the number)
             document.getElementById('volKnobVal').innerText = isMuted ? 'MUTE' : `${percent}%`;
 
-            // Update Antenna Collar Position
             const antennaCollar = document.getElementById('antennaCollar');
             if (antennaCollar) {
                 antennaCollar.style.bottom = `${masterVolume * 75}%`;
             }
 
-            // Update Display Readouts
             document.getElementById('screenVolDisplay').innerText = isMuted ? 'VOL: MUTE' : `VOL: ${percent}%`;
 
-            // Update Audio Gain Node
             if (gainNode) {
                 gainNode.gain.value = isMuted ? 0 : masterVolume;
             }
@@ -475,12 +697,10 @@
             updateVolume(masterVolume);
         }
 
-        // Attach Mouse Wheel & Touch/Drag Events for Clean Volume Knob
         function setupVolumeInteractions() {
             const volKnob = document.getElementById('volKnob');
             const antennaContainer = document.getElementById('antennaContainer');
 
-            // 1. Mouse Wheel Scrolling for Volume (Up = Increase, Down = Decrease)
             const handleWheel = (e) => {
                 e.preventDefault();
                 initAudioContext();
@@ -491,7 +711,6 @@
             volKnob.addEventListener('wheel', handleWheel, { passive: false });
             antennaContainer.addEventListener('wheel', handleWheel, { passive: false });
 
-            // 2. Vertical Drag Logic (Touch & Mouse Drag)
             let isDragging = false;
             let startY = 0;
             let startVol = 0;
@@ -505,7 +724,7 @@
 
             const moveDrag = (clientY) => {
                 if (!isDragging) return;
-                const deltaY = startY - clientY; // Drag Up = Positive = Increase Vol
+                const deltaY = startY - clientY;
                 const sensitivity = 0.005;
                 updateVolume(startVol + (deltaY * sensitivity));
             };
@@ -514,14 +733,12 @@
                 isDragging = false;
             };
 
-            // Mouse Drag Listeners
             volKnob.addEventListener('mousedown', (e) => startDrag(e.clientY));
             antennaContainer.addEventListener('mousedown', (e) => startDrag(e.clientY));
 
             window.addEventListener('mousemove', (e) => moveDrag(e.clientY));
             window.addEventListener('mouseup', stopDrag);
 
-            // Touch Drag Listeners
             const touchStartHandler = (e) => {
                 if (e.touches.length > 0) startDrag(e.touches[0].clientY);
             };
@@ -544,16 +761,17 @@
             const btn = document.getElementById('scramblerBtn');
             const icon = document.getElementById('scramblerIcon');
             const text = document.getElementById('scramblerText');
+            const langData = translations[currentLanguage];
 
             if (isScrambled) {
                 btn.classList.add('border-tactical-amber', 'bg-amber-950/40');
                 icon.className = 'fa-solid fa-lock text-tactical-amber text-sm mb-1 animate-pulse';
-                text.innerText = 'تشفير ON';
+                text.innerText = langData.scramblerOn;
                 addCommsLog(`[تشفير اللاسلكي] تم تفعيل التشفير التاكتيكي (Scrambler Active)`, 'tx');
             } else {
                 btn.classList.remove('border-tactical-amber', 'bg-amber-950/40');
                 icon.className = 'fa-solid fa-lock text-gray-400 text-sm mb-1';
-                text.innerText = 'تشفير OFF';
+                text.innerText = langData.scramblerOff;
                 addCommsLog(`[تشفير اللاسلكي] تم تعطيل التشفير (Clear Voice)`, 'info');
             }
         }
@@ -562,13 +780,14 @@
             playClickSound();
             const icon = document.getElementById('recordIcon');
             const text = document.getElementById('recordText');
+            const langData = translations[currentLanguage];
 
             if (recordedAudioBlob) {
                 addCommsLog(`[إعادة بث] جاري تشغيل الملحوظة الصوتية المسجلة عبر القناة ${currentChannel}...`, 'tx');
                 playSquelchSound();
                 const audio = new Audio(URL.createObjectURL(recordedAudioBlob));
                 audio.play();
-                text.innerText = 'تسجيل 5s';
+                text.innerText = langData.recordText;
                 icon.className = 'fa-solid fa-circle-dot text-red-400 text-sm mb-1';
                 recordedAudioBlob = null;
                 return;
@@ -582,13 +801,13 @@
                 mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                 mediaRecorder.onstop = () => {
                     recordedAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    text.innerText = 'إعادة بث';
+                    text.innerText = langData.recordPlay;
                     icon.className = 'fa-solid fa-play text-tactical-accent text-sm mb-1 animate-bounce';
                     addCommsLog(`تم حفظ الصوت. انقر للتشغيل عبر اللاسلكي.`, 'info');
                 };
 
                 mediaRecorder.start();
-                text.innerText = 'جاري التسجيل...';
+                text.innerText = langData.recordRecording;
                 icon.className = 'fa-solid fa-microphone text-red-500 text-sm mb-1 animate-pulse';
 
                 setTimeout(() => {
@@ -644,7 +863,8 @@
         morseTextInput.addEventListener('input', () => {
             const text = morseTextInput.value.trim().toUpperCase();
             if (!text) {
-                morseCodeOutput.innerHTML = '<span class="text-gray-600 text-xs italic">تظهر الشفرة المترجمة هنا...</span>';
+                const langData = translations[currentLanguage];
+                morseCodeOutput.innerHTML = `<span class="text-gray-600 text-xs italic">${langData.morsePreviewEmpty}</span>`;
                 return;
             }
 
@@ -661,8 +881,73 @@
             morseCodeOutput.innerText = translatedMorse.join(' ');
         });
 
-        async function transmitMorseCode() {
+        function handleMorseModeChange() {
+            const mode = document.getElementById('morseModeSelect').value;
+            const delayContainer = document.getElementById('delayInputContainer');
+            if (mode === 'delay') {
+                delayContainer.classList.remove('hidden');
+            } else {
+                delayContainer.classList.add('hidden');
+            }
+        }
+
+        async function startMorseTransmissionProcess() {
             initAudioContext();
+            const text = morseTextInput.value.trim().toUpperCase();
+            if (!text || isMorsePlaying) return;
+
+            const mode = document.getElementById('morseModeSelect').value;
+
+            if (mode === 'immediate') {
+                await transmitMorseCodeOnce();
+            } else if (mode === 'delay') {
+                let seconds = parseInt(document.getElementById('morseDelayInput').value) || 5;
+                addCommsLog(`[مؤقت مورس] سيبدأ الإرسال خلال ${seconds} ثوانٍ...`, 'info');
+                
+                let remaining = seconds;
+                const btn = document.getElementById('transmitMorseBtn');
+                btn.disabled = true;
+
+                morseDelayTimer = setInterval(() => {
+                    remaining--;
+                    if (remaining > 0) {
+                        addCommsLog(`[مؤقت مورس] باقي للبدء: ${remaining}s`, 'info');
+                    } else {
+                        clearInterval(morseDelayTimer);
+                        morseDelayTimer = null;
+                        btn.disabled = false;
+                        transmitMorseCodeOnce();
+                    }
+                }, 1000);
+
+            } else if (mode === 'continuous') {
+                isContinuousMorseActive = true;
+                document.getElementById('stopMorseBtn').classList.remove('hidden');
+                document.getElementById('transmitMorseBtn').disabled = true;
+
+                addCommsLog(`[بث مستمر] تم تفعيل الإرسال المستمر لشفرة مورس...`, 'tx');
+
+                while (isContinuousMorseActive) {
+                    await transmitMorseCodeOnce();
+                    if (!isContinuousMorseActive) break;
+                    await sleep(1500); // 1.5 second gap between continuous broadcasts
+                }
+            }
+        }
+
+        function stopContinuousMorse() {
+            isContinuousMorseActive = false;
+            if (morseDelayTimer) {
+                clearInterval(morseDelayTimer);
+                morseDelayTimer = null;
+                addCommsLog(`[مؤقت مورس] تم إلغاء مؤقت الإرسال.`, 'info');
+            }
+            document.getElementById('stopMorseBtn').classList.add('hidden');
+            document.getElementById('transmitMorseBtn').disabled = false;
+            addCommsLog(`[بث مستمر] تم إيقاف الإرسال المستمر.`, 'info');
+        }
+
+        async function transmitMorseCodeOnce() {
             const text = morseTextInput.value.trim().toUpperCase();
             const morseText = morseCodeOutput.innerText;
 
@@ -670,7 +955,9 @@
 
             const targetCh = parseInt(document.getElementById('morseTargetChannel').value);
             isMorsePlaying = true;
-            document.getElementById('transmitMorseBtn').disabled = true;
+            if (!isContinuousMorseActive) {
+                document.getElementById('transmitMorseBtn').disabled = true;
+            }
 
             addCommsLog(`[بث مورس - قناة ${targetCh}] النص: "${text}" | مورس: ${morseText}`, 'morse');
             
@@ -681,6 +968,9 @@
             const characters = morseText.split('');
 
             for (let symbol of characters) {
+                if (!isContinuousMorseActive && document.getElementById('morseModeSelect').value === 'continuous') {
+                    break;
+                }
                 if (symbol === '.') {
                     await playTone(750, unitTime);
                     await sleep(unitTime);
@@ -696,7 +986,9 @@
 
             playSquelchSound();
             isMorsePlaying = false;
-            document.getElementById('transmitMorseBtn').disabled = false;
+            if (!isContinuousMorseActive) {
+                document.getElementById('transmitMorseBtn').disabled = false;
+            }
         }
 
         function playTone(freq, durationMs) {
@@ -772,7 +1064,8 @@
 
             const pttBtn = document.getElementById('pttBtn');
             pttBtn.classList.add('bg-red-600', 'text-white');
-            document.getElementById('screenStatusOverlay').innerText = `إرسال TX - بث حي`;
+            const langData = translations[currentLanguage];
+            document.getElementById('screenStatusOverlay').innerText = langData.statusTx;
             document.getElementById('screenStatusOverlay').classList.add('text-red-400', 'border-red-600');
 
             playSquelchSound();
@@ -785,7 +1078,7 @@
                     analyser.fftSize = 128;
                     micSource.connect(analyser);
                 }
-                setMicStatus(true, 'المايك نشط');
+                setMicStatus(true, langData.micActive);
                 addCommsLog(`[قناة ${currentChannel}] جاري البث المباشر PTT...`, 'tx');
             } catch (err) {
                 setMicStatus(false, 'وضع محاكاة (لا مايك)');
@@ -801,23 +1094,23 @@
 
             const pttBtn = document.getElementById('pttBtn');
             pttBtn.classList.remove('bg-red-600', 'text-white');
-            document.getElementById('screenStatusOverlay').innerText = `استقبال RX - جاهز`;
+            const langData = translations[currentLanguage];
+            document.getElementById('screenStatusOverlay').innerText = langData.statusRx;
             document.getElementById('screenStatusOverlay').classList.remove('text-red-400', 'border-red-600');
 
             playSquelchSound();
             addCommsLog(`[قناة ${currentChannel}] انتهى البث الصوتي.`, 'info');
         }
 
-        // Spacebar Hotkey
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'TEXTAREA') {
+            if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'INPUT') {
                 e.preventDefault();
                 startTransmission();
             }
         });
 
         window.addEventListener('keyup', (e) => {
-            if (e.code === 'Space' && document.activeElement.tagName !== 'TEXTAREA') {
+            if (e.code === 'Space' && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'INPUT') {
                 e.preventDefault();
                 stopTransmission();
             }
@@ -827,7 +1120,7 @@
             const setTextAndTransmit = (msg) => {
                 document.getElementById('morseTextInput').value = msg;
                 document.getElementById('morseTextInput').dispatchEvent(new Event('input'));
-                transmitMorseCode();
+                startMorseTransmissionProcess();
             };
 
             if (navigator.geolocation) {
@@ -841,7 +1134,6 @@
                     { timeout: 5000, maximumAge: 10000 }
                 );
             } else {
-                // متصفح بلا دعم geolocation إطلاقًا — نرسل نداء عام بدل ما يتوقف الإرسال بالكامل
                 setTextAndTransmit("SOS DISTRESS TAC 184");
             }
         }
@@ -857,7 +1149,6 @@
                 addCommsLog(`[طوارئ SOS] تم إطلاق نداء الاستغاثة!`, 'danger');
 
                 sendSOSBeacon();
-                // نداء متكرر كل 12 ثانية طالما الطوارئ مفعّلة، بدل إرسال لقطة واحدة فقط
                 sosInterval = setInterval(() => {
                     if (!isMorsePlaying) sendSOSBeacon();
                 }, 12000);
@@ -908,13 +1199,12 @@
                     x += sliceWidth;
                 }
 
-                // RMS على كامل المصفوفة بدل عيّنة واحدة (dataArray[0]) لقراءة أكثر استقرارًا وتمثيلًا للمستوى الحقيقي
                 let sumSquares = 0;
                 for (let i = 0; i < dataArray.length; i++) {
                     const norm = (dataArray[i] - 128) / 128;
                     sumSquares += norm * norm;
                 }
-                const METER_SENSITIVITY = 2.5; // لو ظهر المقياس هادئ/حساس جدًا بعد المعاينة الحية، عدّل هذا الثابت
+                const METER_SENSITIVITY = 2.5;
                 mockLevel = Math.sqrt(sumSquares / dataArray.length) * METER_SENSITIVITY;
             } else {
                 const time = Date.now() * 0.005;
@@ -937,10 +1227,11 @@
         function setupTargetChannelsSelect() {
             const select = document.getElementById('morseTargetChannel');
             select.innerHTML = '';
+            const channelWord = translations[currentLanguage].chanLabel;
             for (let i = 1; i <= totalChannels; i++) {
                 const opt = document.createElement('option');
                 opt.value = i;
-                opt.innerText = `القناة ${i < 10 ? '0' + i : i} - (${channelFreqs[i]} MHz)`;
+                opt.innerText = `${channelWord} ${i < 10 ? '0' + i : i} - (${channelFreqs[i]} MHz)`;
                 select.appendChild(opt);
             }
         }
@@ -972,10 +1263,10 @@
 
             const wrapper = document.createElement('div');
             const timeSpan = document.createElement('span');
-            timeSpan.className = 'opacity-60 text-[10px] ml-1.5';
+            timeSpan.className = 'opacity-60 text-[10px] ml-1.5 mr-1.5';
             timeSpan.textContent = `[${timeStr}]`;
             const msgSpan = document.createElement('span');
-            msgSpan.textContent = msg; // textContent, not innerHTML — msg may contain raw user input (e.g. the morse message text)
+            msgSpan.textContent = msg;
 
             wrapper.appendChild(timeSpan);
             wrapper.appendChild(msgSpan);
@@ -989,10 +1280,43 @@
             document.getElementById('commsLog').innerHTML = '';
         }
 
+        // Print Comms Log System
+        function printCommsLog() {
+            const logContent = document.getElementById('commsLog').innerHTML;
+            if (!logContent.trim()) return;
+
+            const printWin = window.open('', '_blank', 'width=800,height=600');
+            const dir = translations[currentLanguage].dir;
+            const title = translations[currentLanguage].logHeader + " - TAC 184";
+
+            printWin.document.write(`
+                <!DOCTYPE html>
+                <html dir="${dir}">
+                <head>
+                    <title>${title}</title>
+                    <style>
+                        body { font-family: monospace, sans-serif; padding: 20px; color: #111; background: #fff; }
+                        h2 { border-bottom: 2px solid #333; pb: 8px; margin-bottom: 15px; font-size: 18px; }
+                        .log-entry { font-size: 12px; margin-bottom: 6px; padding: 6px; background: #f4f4f4; border-radius: 4px; border: 1px solid #ddd; }
+                    </style>
+                </head>
+                <body>
+                    <h2>${title} (${new Date().toLocaleString()})</h2>
+                    <div>${logContent}</div>
+                    <script>
+                        window.onload = function() { window.print(); window.close(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWin.document.close();
+        }
+
         function toggleNightVision() {
             isNightVision = !isNightVision;
             document.body.classList.toggle('night-vision', isNightVision);
-            document.getElementById('nvgStatus').innerText = isNightVision ? 'Night Vision' : 'عادي';
+            const langData = translations[currentLanguage];
+            document.getElementById('nvgStatus').innerText = isNightVision ? langData.nightVision : langData.normalMode;
         }
 
         function sleep(ms) {
@@ -1000,11 +1324,12 @@
         }
 
         window.onload = function() {
-            setupTargetChannelsSelect();
+            applyLanguageUI();
             setupVolumeInteractions();
             updateVolume(0.80);
             resizeWaveformCanvas();
             drawWaveform();
+            addCommsLog(translations[currentLanguage].logStartMsg, 'info');
         };
     </script>
 </body>
