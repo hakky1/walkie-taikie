@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>محاكي اللاسلكي الميداني 184 - TAC 184</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Arabic Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tactical: {
+                            bg: '#060809',
+                            panel: '#12181c',
+                            border: '#1f2a30',
+                            accent: '#00ff66',
+                            amber: '#ffb700',
+                            danger: '#ff2a2a',
+                            screen: '#05140b',
+                            metal: '#21292d'
+                        }
+                    },
+                    fontFamily: {
+                        changa: ['Changa', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        html, body {
+            min-height: 100vh;
+            background-color: #060809;
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(0, 255, 102, 0.04) 0%, transparent 70%),
+                linear-gradient(rgba(18, 24, 28, 0.6) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(18, 24, 28, 0.6) 1px, transparent 1px);
+            background-size: 100% 100%, 20px 20px, 20px 20px;
+            color: #e2e8f0;
+            font-family: 'Changa', sans-serif;
+            overflow-y: auto !important;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Tactical CRT screen scanlines */
+        .crt-overlay {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        /* Speaker Grille Pattern */
+        .speaker-mesh {
+            background-image: radial-gradient(#000 35%, transparent 35%);
+            background-size: 5px 5px;
+        }
+
+        .glow-green { box-shadow: 0 0 10px rgba(0, 255, 102, 0.6); }
+        .glow-red { box-shadow: 0 0 12px rgba(255, 42, 42, 0.8); }
+
+        /* Night Vision Toggle Effect */
+        body.night-vision {
+            filter: sepia(100%) hue-rotate(85deg) saturate(300%) contrast(120%);
+        }
+
+        .knob-drag-area {
+            touch-action: none;
+        }
+
+        /* Allow copying useful readouts (SOS coords, log, morse output)
+           even though the rest of the UI has user-select disabled to
+           avoid accidental text selection while dragging the knobs. */
+        #commsLog, #freqDisplay, #morseCodeOutput {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1215;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2d27;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body class="w-full flex flex-col items-center py-4 px-2 sm:px-4 space-y-4">
+
+    <!-- Top System Header Bar -->
+    <header class="w-full max-w-2xl bg-tactical-panel border border-tactical-border px-4 py-2 rounded-2xl shadow-xl flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-black border-2 border-tactical-accent flex items-center justify-center text-tactical-accent font-extrabold text-lg shadow-[0_0_10px_rgba(0,255,102,0.3)]">
+                184
+            </div>
+            <div>
+                <h1 class="text-base sm:text-lg font-extrabold text-white tracking-wider flex items-center gap-2">
+                    محاكي اللاسلكي <span class="text-tactical-accent">TAC-184</span>
+                </h1>
+                <p class="text-[11px] text-gray-400 font-mono">نظام الاتصالات الميدانية - FREQ 184.000 MHz</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Night Vision Switch -->
+            <button id="nvgToggleBtn" onclick="toggleNightVision()" class="px-3 py-1.5 rounded-xl border border-gray-700 bg-gray-900 text-xs font-semibold text-gray-300 hover:text-tactical-accent transition flex items-center gap-1.5">
+                <i class="fa-solid fa-eye text-xs"></i>
+                <span id="nvgStatus">عادي</span>
+            </button>
+
+            <!-- Mic Status Badge -->
+            <div class="hidden sm:flex items-center gap-1.5 bg-black/60 px-3 py-1.5 rounded-xl border border-tactical-border">
+                <span id="micStatusDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="micStatusText" class="text-xs font-mono text-emerald-400">المايك نشط</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER - VERTICALLY STACKED -->
+    <div class="w-full max-w-2xl flex flex-col items-center space-y-5">
+
+        <!-- WALKIETALKIE DEVICE CHASSIS -->
+        <div class="w-full max-w-[380px] bg-gradient-to-b from-tactical-metal via-[#172025] to-[#0e1316] p-4 sm:p-5 rounded-3xl border-2 border-gray-700 shadow-2xl flex flex-col space-y-4 relative">
+            
+            <!-- TOP HARDWARE CONTROLS: Clean Rotary Volume Knob & Antenna -->
+            <div class="w-full flex justify-between items-end px-2 pt-1">
+                
+                <!-- LEFT: Clean Physical Volume Knob (No Green Line) -->
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] font-mono font-bold text-tactical-accent mb-1 tracking-wider">VOL KNOB (سحب/لف)</span>
+                    <div id="volKnob" 
+                         class="knob-drag-area relative w-14 h-14 rounded-full bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-700 border-2 border-gray-600 shadow-xl cursor-ns-resize flex items-center justify-center transition-transform duration-75 active:scale-95"
+                         title="اسحب لأعلى/لأسفل أو استخدم عجلة الماوس للتحكم بالصوت">
+                        
+                        <!-- Clean Digital Volume Inner Screen (No Green Stroke Line) -->
+                        <div class="w-10 h-10 rounded-full bg-black border border-gray-700 flex items-center justify-center text-xs text-tactical-accent font-mono font-bold shadow-inner pointer-events-none" id="volKnobVal">
+                            80%
+                        </div>
+                    </div>
+                    <button id="muteBtn" onclick="toggleMute()" title="كتم / تفعيل الصوت" class="mt-1.5 w-7 h-7 rounded-lg border border-gray-700 bg-gray-900 text-gray-400 hover:text-tactical-accent hover:border-tactical-accent transition flex items-center justify-center active:scale-95">
+                        <i class="fa-solid fa-volume-high text-[10px]" id="muteIcon"></i>
+                    </button>
+                </div>
+
+                <!-- CENTER: Channel Dial -->
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] font-mono font-bold text-gray-400 mb-1 tracking-wider">CH DIAL</span>
+                    <div id="chDial" onclick="nextChannel()" class="relative w-14 h-14 rounded-full bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-700 border-2 border-gray-600 shadow-xl cursor-pointer active:scale-95 transition flex items-center justify-center">
+                        <div class="w-1 h-5 bg-tactical-amber rounded-full absolute top-1 shadow-[0_0_6px_#ffb700]"></div>
+                        <div class="w-8 h-8 rounded-full bg-black/90 border border-gray-700 flex items-center justify-center text-xs text-tactical-amber font-mono font-bold" id="chDialVal">
+                            01
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Interactive Antenna Control -->
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] font-mono font-bold text-tactical-accent mb-1 tracking-wider">ANT-VOL</span>
+                    
+                    <div id="antennaContainer" 
+                         class="knob-drag-area relative w-8 h-20 bg-gray-900 rounded-t-xl border-2 border-gray-700 cursor-ns-resize flex justify-center shadow-inner"
+                         title="اسحب لأعلى/لأسفل للتحكم بالصوت">
+                        
+                        <!-- Antenna Shaft Base -->
+                        <div class="absolute bottom-0 w-3.5 h-full bg-gradient-to-r from-gray-800 via-gray-600 to-gray-900 rounded-t-sm"></div>
+
+                        <!-- Antenna Top Bulb -->
+                        <div class="absolute -top-3 w-6 h-3.5 bg-gray-700 border border-gray-500 rounded-t-full flex items-center justify-center">
+                            <div id="antennaLed" class="w-2 h-2 rounded-full bg-tactical-accent glow-green"></div>
+                        </div>
+
+                        <!-- Knurled Sliding Ring -->
+                        <div id="antennaCollar" 
+                             class="absolute w-7 h-4 rounded border border-tactical-accent bg-tactical-accent/30 shadow-[0_0_8px_rgba(0,255,102,0.5)] transition-all duration-75 flex items-center justify-center pointer-events-none"
+                             style="bottom: 80%;">
+                            <div class="w-full h-0.5 bg-tactical-accent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OLED TACTICAL DISPLAY SCREEN -->
+            <div class="w-full bg-tactical-screen rounded-2xl border-2 border-emerald-900/70 p-3.5 shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] overflow-hidden relative">
+                <div class="crt-overlay absolute inset-0 z-10"></div>
+                
+                <!-- Screen Header info -->
+                <div class="flex justify-between items-center text-xs font-mono text-emerald-400/90 mb-1 border-b border-emerald-900/50 pb-1">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>ALPHA-184</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-tactical-amber flex items-center gap-1">
+                            <i class="fa-solid fa-volume-high text-xs"></i>
+                            <span id="screenVolDisplay">VOL: 80%</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Main Frequency Display -->
+                <div class="flex justify-between items-baseline my-1">
+                    <div>
+                        <div class="text-[10px] text-emerald-500/80 font-mono">التردد الميداني (MHz)</div>
+                        <div id="freqDisplay" class="text-3xl font-mono font-extrabold text-tactical-accent tracking-wider">
+                            184.000
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] text-emerald-500/80 font-mono">القناة</div>
+                        <div id="channelDisplay" class="text-2xl font-mono font-bold text-tactical-amber">
+                            01<span class="text-xs font-normal text-gray-400"> - CH</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Waveform Canvas -->
+                <div class="relative w-full h-14 bg-black/70 rounded-xl border border-emerald-900/60 my-1.5 overflow-hidden flex items-center justify-center">
+                    <canvas id="waveformCanvas" class="w-full h-full block z-0"></canvas>
+                    <div id="screenStatusOverlay" class="absolute text-center z-10 text-xs font-mono text-emerald-400 tracking-widest bg-black/80 px-2.5 py-0.5 rounded-md border border-emerald-800/60">
+                        استقبال RX - جاهز
+                    </div>
+                </div>
+
+                <!-- Audio Level dB Meter -->
+                <div class="w-full space-y-1">
+                    <div class="flex justify-between text-[10px] font-mono text-emerald-500/90">
+                        <span>0%</span>
+                        <span>:MIC dB</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="w-full h-2 bg-gray-900 rounded-full overflow-hidden border border-emerald-900/80">
+                        <div id="dbMeterBar" class="h-full bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500 rounded-full transition-all duration-75" style="width: 15%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FRONT BUTTONS PANEL -->
+            <div class="grid grid-cols-4 gap-2">
+                <!-- SOS Button -->
+                <button id="sosBtn" onclick="triggerSOS()" class="col-span-1 bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white p-2 rounded-xl border border-red-500 shadow-md font-bold text-xs flex flex-col items-center justify-center active:scale-95 transition">
+                    <i class="fa-solid fa-triangle-exclamation text-sm mb-1"></i>
+                    <span>طوارئ SOS</span>
+                </button>
+
+                <!-- Scan Channels -->
+                <button onclick="scanChannels()" class="col-span-1 bg-tactical-panel hover:bg-gray-800 border border-gray-700 p-2 rounded-xl text-xs font-semibold text-gray-200 flex flex-col items-center justify-center active:scale-95 transition">
+                    <i class="fa-solid fa-radar text-tactical-accent text-sm mb-1"></i>
+                    <span>مسح SCAN</span>
+                </button>
+
+                <!-- Scrambler Encryption -->
+                <button id="scramblerBtn" onclick="toggleScrambler()" class="col-span-1 bg-tactical-panel hover:bg-gray-800 border border-gray-700 p-2 rounded-xl text-xs font-semibold text-gray-200 flex flex-col items-center justify-center active:scale-95 transition">
+                    <i class="fa-solid fa-lock text-tactical-amber text-sm mb-1" id="scramblerIcon"></i>
+                    <span id="scramblerText">تشفير OFF</span>
+                </button>
+
+                <!-- Quick Voice Memo -->
+                <button id="recordMemoBtn" onclick="toggleVoiceRecord()" class="col-span-1 bg-tactical-panel hover:bg-gray-800 border border-gray-700 p-2 rounded-xl text-xs font-semibold text-gray-200 flex flex-col items-center justify-center active:scale-95 transition">
+                    <i class="fa-solid fa-circle-dot text-red-400 text-sm mb-1" id="recordIcon"></i>
+                    <span id="recordText">تسجيل 5s</span>
+                </button>
+            </div>
+
+            <!-- SPEAKER GRILLE -->
+            <div class="w-full h-11 bg-black/80 rounded-xl border border-gray-800 speaker-mesh flex items-center justify-center">
+                <span class="text-[10px] font-mono text-gray-500 tracking-widest bg-black/90 px-3 py-0.5 rounded border border-gray-800">
+                    HIGH-POWER SPEAKER 184
+                </span>
+            </div>
+
+            <!-- PTT (PRESS TO TALK) BUTTON -->
+            <div class="w-full">
+                <button id="pttBtn" 
+                        onmousedown="startTransmission()" 
+                        onmouseup="stopTransmission()" 
+                        onmouseleave="stopTransmission()"
+                        ontouchstart="startTransmission(event)" 
+                        ontouchend="stopTransmission(event)"
+                        class="w-full bg-gradient-to-r from-emerald-600 via-tactical-accent to-emerald-600 hover:brightness-110 text-black font-extrabold py-3.5 px-4 rounded-xl shadow-lg border border-emerald-300 text-base flex items-center justify-center gap-2 transition active:scale-[0.98]">
+                    <i class="fa-solid fa-microphone text-xl"></i>
+                    <span>اضغط واستمر للتحدث (PTT)</span>
+                </button>
+                <div class="text-center text-xs font-mono text-gray-400 mt-1.5">
+                    أو اضغط على <kbd class="px-1.5 py-0.5 bg-gray-800 rounded border border-gray-700 text-white">Spacebar</kbd>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MORSE CODE TRANSMITTER MODULE -->
+        <div class="w-full bg-tactical-panel border border-tactical-border rounded-2xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3 border-b border-tactical-border pb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-tower-cell text-tactical-accent text-base"></i>
+                    <h2 class="text-sm font-bold text-white">مرسل شفرة مورس التاكتيكي</h2>
+                </div>
+                <span class="text-xs font-mono bg-tactical-accent/10 text-tactical-accent px-2 py-0.5 rounded-md border border-tactical-accent/30">
+                    MORSE TX
+                </span>
+            </div>
+
+            <!-- Target Channel Selector for Morse -->
+            <div class="mb-3">
+                <label class="block text-xs text-gray-400 font-mono mb-1">القناة المستهدفة للبث:</label>
+                <select id="morseTargetChannel" class="w-full bg-black/80 border border-gray-700 rounded-xl px-3 py-2 text-xs text-tactical-amber font-mono focus:border-tactical-accent outline-none">
+                    <!-- Options generated dynamically via JS -->
+                </select>
+            </div>
+
+            <!-- Text Message Input -->
+            <div class="mb-3">
+                <label class="block text-xs text-gray-400 font-mono mb-1">الرسالة الميدانية (عربي / English / أرقام):</label>
+                <textarea id="morseTextInput" rows="2" placeholder="اكتب النص هنا (مثال: SOS أو موقع الهدف)..." class="w-full bg-black/80 border border-gray-700 rounded-xl p-3 text-xs text-white focus:border-tactical-accent outline-none resize-none font-sans"></textarea>
+            </div>
+
+            <!-- Real-Time Morse Output Display -->
+            <div class="mb-3">
+                <div class="text-xs text-gray-400 font-mono mb-1">معاينة شفرة مورس:</div>
+                <div id="morseCodeOutput" class="w-full min-h-[42px] bg-black/90 border border-emerald-900/70 rounded-xl p-2.5 font-mono text-tactical-accent text-xs break-all leading-relaxed flex items-center">
+                    <span class="text-gray-600 text-xs italic">تظهر الشفرة المترجمة هنا...</span>
+                </div>
+            </div>
+
+            <!-- Transmit Morse Audio Button -->
+            <button id="transmitMorseBtn" onclick="transmitMorseCode()" class="w-full bg-gradient-to-r from-tactical-amber to-yellow-600 hover:brightness-110 text-black font-extrabold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>بث شفرة مورس عبر القناة</span>
+            </button>
+        </div>
+
+        <!-- COMMUNICATIONS FEED LOG -->
+        <div class="w-full bg-tactical-panel border border-tactical-border rounded-2xl p-4 shadow-xl flex flex-col">
+            <div class="flex items-center justify-between mb-2 border-b border-tactical-border pb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-tactical-amber text-sm"></i>
+                    <h3 class="text-sm font-bold text-white">سجل اتصالات اللاسلكي</h3>
+                </div>
+                <button onclick="clearCommsLog()" class="text-xs text-gray-400 hover:text-red-400 transition">
+                    مسح السجل
+                </button>
+            </div>
+
+            <!-- Log Messages Container -->
+            <div id="commsLog" class="h-44 overflow-y-auto space-y-2 pr-1 text-xs font-mono">
+                <div class="p-2 rounded-lg bg-black/50 border-r-2 border-tactical-accent text-gray-300">
+                    <span class="text-tactical-accent font-bold">[184.000 MHz]</span> تم تشغيل المحاكي. التمرير الرأسي وعجلة الصوت مفعّلة بنجاح.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer Section with Instagram Credit -->
+    <footer class="w-full max-w-2xl py-3 border-t border-tactical-border flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-400 shrink-0 mt-4">
+        <div>
+            محاكي اللاسلكي الميداني <span class="text-tactical-accent font-bold">184</span> &copy; 2026
+        </div>
+        <div class="flex items-center gap-2">
+            <span>تم التطوير بواسطة:</span>
+            <a href="https://www.instagram.com/hki_184/?hl=ar" target="_blank" rel="noopener noreferrer" class="text-tactical-accent hover:text-white font-bold flex items-center gap-1.5 bg-tactical-panel px-3 py-1 rounded-lg border border-tactical-accent/40 hover:border-tactical-accent transition shadow-sm">
+                <i class="fa-brands fa-instagram text-pink-500 text-sm"></i>
+                <span>hakky</span>
+            </a>
+        </div>
+    </footer>
+
+    <script>
+        // Global App State
+        let currentChannel = 1;
+        const totalChannels = 16;
+        let masterVolume = 0.80; // 80% Default
+        let isTransmitting = false;
+        let isSOSActive = false;
+        let isNightVision = false;
+        let isMuted = false;
+        let isScrambled = false;
+        let sosInterval = null;
+
+        // Web Audio API Context & Nodes
+        let audioCtx = null;
+        let micStream = null;
+        let micSource = null;
+        let analyser = null;
+        let gainNode = null;
+        let isMorsePlaying = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordedAudioBlob = null;
+
+        // Channel Frequency Map (MHz)
+        const channelFreqs = {
+            1: "184.000", 2: "184.125", 3: "184.250", 4: "184.375",
+            5: "184.500", 6: "184.625", 7: "184.750", 8: "184.875",
+            9: "185.000", 10: "185.125", 11: "185.250", 12: "185.375",
+            13: "185.500", 14: "185.625", 15: "185.750", 16: "185.875"
+        };
+
+        // Morse Code Dictionary (Arabic + English + Digits)
+        const morseDictionary = {
+            'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',   'E': '.',
+            'F': '..-.',  'G': '--.',   'H': '....',  'I': '..',    'J': '.---',
+            'K': '-.-',   'L': '.-..',  'M': '--',    'N': '-.',    'O': '---',
+            'P': '.--.',  'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
+            'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',  'Y': '-.--',
+            'Z': '--..',
+            '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+            '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----',
+            'ا': '.-',    'أ': '.-',    'إ': '.-',    'آ': '.-',    'ب': '-...',
+            'ت': '-',     'ث': '-.-.',  'ج': '.---',  'ح': '....',  'خ': '---',
+            'د': '-..',   'ذ': '--..',  'ر': '.-.',   'ز': '---.',  'س': '...',
+            'ش': '----',  'ص': '-..-',  'ض': '...-',  'ط': '..-',   'ظ': '-.--',
+            'ع': '.-.-',  'غ': '--.',   'ف': '..-.',  'ق': '--.-',  'ك': '-.-',
+            'ل': '.-..',  'م': '--',    'ن': '-.',    'ه': '..-..', 'ة': '..-..',
+            'و': '.--',   'ي': '..',    'ى': '..',    ' ': ' / '
+        };
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = masterVolume;
+                gainNode.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // --- VOLUME CONTROL ENGINE (Clean Knob, No Green Line) ---
+        function updateVolume(newVol) {
+            masterVolume = Math.max(0, Math.min(1, newVol));
+            const percent = Math.round(masterVolume * 100);
+
+            // Update Volume Knob Percentage Text (Only the number)
+            document.getElementById('volKnobVal').innerText = isMuted ? 'MUTE' : `${percent}%`;
+
+            // Update Antenna Collar Position
+            const antennaCollar = document.getElementById('antennaCollar');
+            if (antennaCollar) {
+                antennaCollar.style.bottom = `${masterVolume * 75}%`;
+            }
+
+            // Update Display Readouts
+            document.getElementById('screenVolDisplay').innerText = isMuted ? 'VOL: MUTE' : `VOL: ${percent}%`;
+
+            // Update Audio Gain Node
+            if (gainNode) {
+                gainNode.gain.value = isMuted ? 0 : masterVolume;
+            }
+        }
+
+        function toggleMute() {
+            playClickSound();
+            isMuted = !isMuted;
+            const icon = document.getElementById('muteIcon');
+            icon.className = isMuted
+                ? 'fa-solid fa-volume-xmark text-tactical-danger text-[10px]'
+                : 'fa-solid fa-volume-high text-[10px]';
+            updateVolume(masterVolume);
+        }
+
+        // Attach Mouse Wheel & Touch/Drag Events for Clean Volume Knob
+        function setupVolumeInteractions() {
+            const volKnob = document.getElementById('volKnob');
+            const antennaContainer = document.getElementById('antennaContainer');
+
+            // 1. Mouse Wheel Scrolling for Volume (Up = Increase, Down = Decrease)
+            const handleWheel = (e) => {
+                e.preventDefault();
+                initAudioContext();
+                const delta = e.deltaY < 0 ? 0.05 : -0.05;
+                updateVolume(masterVolume + delta);
+            };
+
+            volKnob.addEventListener('wheel', handleWheel, { passive: false });
+            antennaContainer.addEventListener('wheel', handleWheel, { passive: false });
+
+            // 2. Vertical Drag Logic (Touch & Mouse Drag)
+            let isDragging = false;
+            let startY = 0;
+            let startVol = 0;
+
+            const startDrag = (clientY) => {
+                isDragging = true;
+                startY = clientY;
+                startVol = masterVolume;
+                initAudioContext();
+            };
+
+            const moveDrag = (clientY) => {
+                if (!isDragging) return;
+                const deltaY = startY - clientY; // Drag Up = Positive = Increase Vol
+                const sensitivity = 0.005;
+                updateVolume(startVol + (deltaY * sensitivity));
+            };
+
+            const stopDrag = () => {
+                isDragging = false;
+            };
+
+            // Mouse Drag Listeners
+            volKnob.addEventListener('mousedown', (e) => startDrag(e.clientY));
+            antennaContainer.addEventListener('mousedown', (e) => startDrag(e.clientY));
+
+            window.addEventListener('mousemove', (e) => moveDrag(e.clientY));
+            window.addEventListener('mouseup', stopDrag);
+
+            // Touch Drag Listeners
+            const touchStartHandler = (e) => {
+                if (e.touches.length > 0) startDrag(e.touches[0].clientY);
+            };
+            const touchMoveHandler = (e) => {
+                if (e.touches.length > 0) {
+                    moveDrag(e.touches[0].clientY);
+                }
+            };
+
+            volKnob.addEventListener('touchstart', touchStartHandler, { passive: true });
+            antennaContainer.addEventListener('touchstart', touchStartHandler, { passive: true });
+
+            window.addEventListener('touchmove', touchMoveHandler, { passive: true });
+            window.addEventListener('touchend', stopDrag);
+        }
+
+        function toggleScrambler() {
+            playClickSound();
+            isScrambled = !isScrambled;
+            const btn = document.getElementById('scramblerBtn');
+            const icon = document.getElementById('scramblerIcon');
+            const text = document.getElementById('scramblerText');
+
+            if (isScrambled) {
+                btn.classList.add('border-tactical-amber', 'bg-amber-950/40');
+                icon.className = 'fa-solid fa-lock text-tactical-amber text-sm mb-1 animate-pulse';
+                text.innerText = 'تشفير ON';
+                addCommsLog(`[تشفير اللاسلكي] تم تفعيل التشفير التاكتيكي (Scrambler Active)`, 'tx');
+            } else {
+                btn.classList.remove('border-tactical-amber', 'bg-amber-950/40');
+                icon.className = 'fa-solid fa-lock text-gray-400 text-sm mb-1';
+                text.innerText = 'تشفير OFF';
+                addCommsLog(`[تشفير اللاسلكي] تم تعطيل التشفير (Clear Voice)`, 'info');
+            }
+        }
+
+        async function toggleVoiceRecord() {
+            playClickSound();
+            const icon = document.getElementById('recordIcon');
+            const text = document.getElementById('recordText');
+
+            if (recordedAudioBlob) {
+                addCommsLog(`[إعادة بث] جاري تشغيل الملحوظة الصوتية المسجلة عبر القناة ${currentChannel}...`, 'tx');
+                playSquelchSound();
+                const audio = new Audio(URL.createObjectURL(recordedAudioBlob));
+                audio.play();
+                text.innerText = 'تسجيل 5s';
+                icon.className = 'fa-solid fa-circle-dot text-red-400 text-sm mb-1';
+                recordedAudioBlob = null;
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    recordedAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    text.innerText = 'إعادة بث';
+                    icon.className = 'fa-solid fa-play text-tactical-accent text-sm mb-1 animate-bounce';
+                    addCommsLog(`تم حفظ الصوت. انقر للتشغيل عبر اللاسلكي.`, 'info');
+                };
+
+                mediaRecorder.start();
+                text.innerText = 'جاري التسجيل...';
+                icon.className = 'fa-solid fa-microphone text-red-500 text-sm mb-1 animate-pulse';
+
+                setTimeout(() => {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                    }
+                }, 5000);
+
+            } catch (err) {
+                addCommsLog(`يرجى السماح بصلاحية الميكروفون للتسجيل.`, 'danger');
+            }
+        }
+
+        function playClickSound() {
+            initAudioContext();
+            playTone(1400, 20);
+        }
+
+        function setChannel(ch) {
+            playClickSound();
+            currentChannel = Math.max(1, Math.min(totalChannels, ch));
+            const formattedCh = currentChannel < 10 ? `0${currentChannel}` : `${currentChannel}`;
+            document.getElementById('channelDisplay').innerHTML = `${formattedCh}<span class="text-xs font-normal text-gray-400"> - CH</span>`;
+            document.getElementById('chDialVal').innerText = formattedCh;
+            document.getElementById('freqDisplay').innerText = channelFreqs[currentChannel];
+            document.getElementById('morseTargetChannel').value = currentChannel;
+
+            addCommsLog(`تم التبديل إلى القناة ${formattedCh} [${channelFreqs[currentChannel]} MHz]`, 'info');
+        }
+
+        function nextChannel() {
+            setChannel(currentChannel >= totalChannels ? 1 : currentChannel + 1);
+        }
+
+        function scanChannels() {
+            playBeepSound(1200, 0.1);
+            addCommsLog(`جاري مسح القنوات والترددات...`, 'tx');
+            let scanCount = 0;
+            const scanInterval = setInterval(() => {
+                nextChannel();
+                scanCount++;
+                if (scanCount >= 6) {
+                    clearInterval(scanInterval);
+                    addCommsLog(`اكتمل المسح. القناة الحالية: ${currentChannel}`, 'info');
+                }
+            }, 250);
+        }
+
+        // Morse Translation Engine
+        const morseTextInput = document.getElementById('morseTextInput');
+        const morseCodeOutput = document.getElementById('morseCodeOutput');
+
+        morseTextInput.addEventListener('input', () => {
+            const text = morseTextInput.value.trim().toUpperCase();
+            if (!text) {
+                morseCodeOutput.innerHTML = '<span class="text-gray-600 text-xs italic">تظهر الشفرة المترجمة هنا...</span>';
+                return;
+            }
+
+            let translatedMorse = [];
+            for (let char of text) {
+                if (morseDictionary[char]) {
+                    translatedMorse.push(morseDictionary[char]);
+                } else if (char === ' ') {
+                    translatedMorse.push('/');
+                } else {
+                    translatedMorse.push('?');
+                }
+            }
+            morseCodeOutput.innerText = translatedMorse.join(' ');
+        });
+
+        async function transmitMorseCode() {
+            initAudioContext();
+            const text = morseTextInput.value.trim().toUpperCase();
+            const morseText = morseCodeOutput.innerText;
+
+            if (!text || isMorsePlaying) return;
+
+            const targetCh = parseInt(document.getElementById('morseTargetChannel').value);
+            isMorsePlaying = true;
+            document.getElementById('transmitMorseBtn').disabled = true;
+
+            addCommsLog(`[بث مورس - قناة ${targetCh}] النص: "${text}" | مورس: ${morseText}`, 'morse');
+            
+            playSquelchSound();
+            await sleep(150);
+
+            const unitTime = 70;
+            const characters = morseText.split('');
+
+            for (let symbol of characters) {
+                if (symbol === '.') {
+                    await playTone(750, unitTime);
+                    await sleep(unitTime);
+                } else if (symbol === '-') {
+                    await playTone(750, unitTime * 3);
+                    await sleep(unitTime);
+                } else if (symbol === '/') {
+                    await sleep(unitTime * 4);
+                } else {
+                    await sleep(unitTime);
+                }
+            }
+
+            playSquelchSound();
+            isMorsePlaying = false;
+            document.getElementById('transmitMorseBtn').disabled = false;
+        }
+
+        function playTone(freq, durationMs) {
+            return new Promise((resolve) => {
+                if (!audioCtx) initAudioContext();
+                const osc = audioCtx.createOscillator();
+                const toneGain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                toneGain.gain.setValueAtTime(0.3 * masterVolume, audioCtx.currentTime);
+
+                osc.connect(toneGain);
+                toneGain.connect(gainNode);
+
+                osc.start();
+                setTimeout(() => {
+                    osc.stop();
+                    resolve();
+                }, durationMs);
+            });
+        }
+
+        function playSquelchSound() {
+            if (!audioCtx) return;
+            const bufferSize = audioCtx.sampleRate * 0.08;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+
+            const whiteNoise = audioCtx.createBufferSource();
+            whiteNoise.buffer = buffer;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1500;
+
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.value = 0.15 * masterVolume;
+
+            whiteNoise.connect(filter);
+            filter.connect(noiseGain);
+            noiseGain.connect(gainNode);
+
+            whiteNoise.start();
+        }
+
+        function playBeepSound(freq = 1000, duration = 0.1) {
+            initAudioContext();
+            playTone(freq, duration * 1000);
+        }
+
+        function setMicStatus(active, label) {
+            const dot = document.getElementById('micStatusDot');
+            const text = document.getElementById('micStatusText');
+            dot.className = active
+                ? 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse'
+                : 'w-2 h-2 rounded-full bg-red-500';
+            text.className = active
+                ? 'text-xs font-mono text-emerald-400'
+                : 'text-xs font-mono text-red-400';
+            text.innerText = label;
+        }
+
+        async function startTransmission(e) {
+            if (e) e.preventDefault();
+            if (isTransmitting) return;
+
+            initAudioContext();
+            isTransmitting = true;
+
+            const pttBtn = document.getElementById('pttBtn');
+            pttBtn.classList.add('bg-red-600', 'text-white');
+            document.getElementById('screenStatusOverlay').innerText = `إرسال TX - بث حي`;
+            document.getElementById('screenStatusOverlay').classList.add('text-red-400', 'border-red-600');
+
+            playSquelchSound();
+
+            try {
+                if (!micStream) {
+                    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    micSource = audioCtx.createMediaStreamSource(micStream);
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 128;
+                    micSource.connect(analyser);
+                }
+                setMicStatus(true, 'المايك نشط');
+                addCommsLog(`[قناة ${currentChannel}] جاري البث المباشر PTT...`, 'tx');
+            } catch (err) {
+                setMicStatus(false, 'وضع محاكاة (لا مايك)');
+                addCommsLog(`[قناة ${currentChannel}] PTT نشط (صوت محاكى)...`, 'tx');
+            }
+        }
+
+        function stopTransmission(e) {
+            if (e) e.preventDefault();
+            if (!isTransmitting) return;
+
+            isTransmitting = false;
+
+            const pttBtn = document.getElementById('pttBtn');
+            pttBtn.classList.remove('bg-red-600', 'text-white');
+            document.getElementById('screenStatusOverlay').innerText = `استقبال RX - جاهز`;
+            document.getElementById('screenStatusOverlay').classList.remove('text-red-400', 'border-red-600');
+
+            playSquelchSound();
+            addCommsLog(`[قناة ${currentChannel}] انتهى البث الصوتي.`, 'info');
+        }
+
+        // Spacebar Hotkey
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                startTransmission();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' && document.activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                stopTransmission();
+            }
+        });
+
+        function sendSOSBeacon() {
+            const setTextAndTransmit = (msg) => {
+                document.getElementById('morseTextInput').value = msg;
+                document.getElementById('morseTextInput').dispatchEvent(new Event('input'));
+                transmitMorseCode();
+            };
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude.toFixed(4);
+                        const lng = pos.coords.longitude.toFixed(4);
+                        setTextAndTransmit(`SOS LAT ${lat} LNG ${lng}`);
+                    },
+                    () => setTextAndTransmit("SOS DISTRESS TAC 184"),
+                    { timeout: 5000, maximumAge: 10000 }
+                );
+            } else {
+                // متصفح بلا دعم geolocation إطلاقًا — نرسل نداء عام بدل ما يتوقف الإرسال بالكامل
+                setTextAndTransmit("SOS DISTRESS TAC 184");
+            }
+        }
+
+        function triggerSOS() {
+            initAudioContext();
+            isSOSActive = !isSOSActive;
+
+            const sosBtn = document.getElementById('sosBtn');
+
+            if (isSOSActive) {
+                sosBtn.classList.add('glow-red');
+                addCommsLog(`[طوارئ SOS] تم إطلاق نداء الاستغاثة!`, 'danger');
+
+                sendSOSBeacon();
+                // نداء متكرر كل 12 ثانية طالما الطوارئ مفعّلة، بدل إرسال لقطة واحدة فقط
+                sosInterval = setInterval(() => {
+                    if (!isMorsePlaying) sendSOSBeacon();
+                }, 12000);
+            } else {
+                sosBtn.classList.remove('glow-red');
+                if (sosInterval) {
+                    clearInterval(sosInterval);
+                    sosInterval = null;
+                }
+                addCommsLog(`[طوارئ SOS] تم إيقاف إنذار الاستغاثة.`, 'info');
+            }
+        }
+
+        // Oscilloscope Draw Loop
+        const canvas = document.getElementById('waveformCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeWaveformCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeWaveformCanvas);
+
+        function drawWaveform() {
+            requestAnimationFrame(drawWaveform);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = isTransmitting ? '#ff2a2a' : '#00ff66';
+            ctx.beginPath();
+
+            const width = canvas.width;
+            const height = canvas.height;
+            const sliceWidth = width / 64;
+
+            let x = 0;
+            let mockLevel = 0;
+
+            if (analyser && isTransmitting) {
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteTimeDomainData(dataArray);
+
+                for (let i = 0; i < dataArray.length; i += 2) {
+                    const v = dataArray[i] / 128.0;
+                    const y = (v * height) / 2;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    x += sliceWidth;
+                }
+
+                // RMS على كامل المصفوفة بدل عيّنة واحدة (dataArray[0]) لقراءة أكثر استقرارًا وتمثيلًا للمستوى الحقيقي
+                let sumSquares = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    const norm = (dataArray[i] - 128) / 128;
+                    sumSquares += norm * norm;
+                }
+                const METER_SENSITIVITY = 2.5; // لو ظهر المقياس هادئ/حساس جدًا بعد المعاينة الحية، عدّل هذا الثابت
+                mockLevel = Math.sqrt(sumSquares / dataArray.length) * METER_SENSITIVITY;
+            } else {
+                const time = Date.now() * 0.005;
+                for (let i = 0; i < 64; i++) {
+                    const amplitude = isTransmitting ? 15 : (isMorsePlaying ? 10 : 2);
+                    const y = (height / 2) + Math.sin(time + i * 0.2) * amplitude;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    x += sliceWidth;
+                }
+                mockLevel = isTransmitting ? 0.75 : (isMorsePlaying ? 0.5 : 0.1);
+            }
+
+            ctx.stroke();
+
+            const dbPercent = Math.min(100, Math.round(mockLevel * 100));
+            document.getElementById('dbMeterBar').style.width = `${dbPercent}%`;
+        }
+
+        function setupTargetChannelsSelect() {
+            const select = document.getElementById('morseTargetChannel');
+            select.innerHTML = '';
+            for (let i = 1; i <= totalChannels; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = `القناة ${i < 10 ? '0' + i : i} - (${channelFreqs[i]} MHz)`;
+                select.appendChild(opt);
+            }
+        }
+
+        function addCommsLog(msg, type = 'info') {
+            const commsLog = document.getElementById('commsLog');
+            const entry = document.createElement('div');
+            const timeStr = new Date().toLocaleTimeString('ar-EG', { hour12: false });
+
+            let borderClass = 'border-tactical-accent';
+            let bgClass = 'bg-black/50';
+            let textClass = 'text-gray-200';
+
+            if (type === 'danger') {
+                borderClass = 'border-red-500';
+                bgClass = 'bg-red-950/40';
+                textClass = 'text-red-300 font-bold';
+            } else if (type === 'tx') {
+                borderClass = 'border-tactical-amber';
+                bgClass = 'bg-yellow-950/30';
+                textClass = 'text-tactical-amber';
+            } else if (type === 'morse') {
+                borderClass = 'border-emerald-400';
+                bgClass = 'bg-emerald-950/30';
+                textClass = 'text-emerald-300';
+            }
+
+            entry.className = `p-2 rounded-lg ${bgClass} border-r-2 ${borderClass} ${textClass} text-xs flex justify-between items-start`;
+
+            const wrapper = document.createElement('div');
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'opacity-60 text-[10px] ml-1.5';
+            timeSpan.textContent = `[${timeStr}]`;
+            const msgSpan = document.createElement('span');
+            msgSpan.textContent = msg; // textContent, not innerHTML — msg may contain raw user input (e.g. the morse message text)
+
+            wrapper.appendChild(timeSpan);
+            wrapper.appendChild(msgSpan);
+            entry.appendChild(wrapper);
+
+            commsLog.appendChild(entry);
+            commsLog.scrollTop = commsLog.scrollHeight;
+        }
+
+        function clearCommsLog() {
+            document.getElementById('commsLog').innerHTML = '';
+        }
+
+        function toggleNightVision() {
+            isNightVision = !isNightVision;
+            document.body.classList.toggle('night-vision', isNightVision);
+            document.getElementById('nvgStatus').innerText = isNightVision ? 'Night Vision' : 'عادي';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        window.onload = function() {
+            setupTargetChannelsSelect();
+            setupVolumeInteractions();
+            updateVolume(0.80);
+            resizeWaveformCanvas();
+            drawWaveform();
+        };
+    </script>
+</body>
+</html>
