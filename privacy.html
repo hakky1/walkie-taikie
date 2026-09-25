@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سياسة الخصوصية - TAC-184</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Arabic Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tactical: {
+                            bg: '#060809',
+                            panel: '#12181c',
+                            border: '#1f2a30',
+                            accent: '#00ff66',
+                            amber: '#ffb700',
+                            danger: '#ff2a2a',
+                            screen: '#05140b',
+                            metal: '#21292d'
+                        }
+                    },
+                    fontFamily: {
+                        changa: ['Changa', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        html, body {
+            min-height: 100vh;
+            background-color: #060809;
+            background-image:
+                radial-gradient(circle at 50% 20%, rgba(0, 255, 102, 0.04) 0%, transparent 70%),
+                linear-gradient(rgba(18, 24, 28, 0.6) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(18, 24, 28, 0.6) 1px, transparent 1px);
+            background-size: 100% 100%, 20px 20px, 20px 20px;
+            color: #e2e8f0;
+            font-family: 'Changa', sans-serif;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0d1215; }
+        ::-webkit-scrollbar-thumb { background: #1f2d27; border-radius: 3px; }
+
+        .policy-p { line-height: 1.9; }
+    </style>
+</head>
+
+<body class="w-full flex flex-col items-center py-4 px-2 sm:px-4 space-y-4">
+
+    <!-- Header -->
+    <header class="w-full max-w-2xl bg-tactical-panel border border-tactical-border px-4 py-2 rounded-2xl shadow-xl flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-black border-2 border-tactical-accent flex items-center justify-center text-tactical-accent font-extrabold text-lg shadow-[0_0_10px_rgba(0,255,102,0.3)]">
+                184
+            </div>
+            <div>
+                <h1 id="policyHeaderTitle" class="text-base sm:text-lg font-extrabold text-white tracking-wider">
+                    سياسة الخصوصية
+                </h1>
+                <p id="policyHeaderSubtitle" class="text-[11px] text-gray-400 font-mono">محاكي اللاسلكي الميداني TAC-184</p>
+            </div>
+        </div>
+
+        <button id="langToggleBtn" onclick="cycleLanguage()" class="px-3 py-1.5 rounded-xl border border-gray-700 bg-gray-900 text-xs font-semibold text-gray-300 hover:text-tactical-accent transition flex items-center gap-1.5 shrink-0">
+            <i class="fa-solid fa-globe text-xs text-tactical-accent"></i>
+            <span id="langText">العربية</span>
+        </button>
+    </header>
+
+    <!-- Back to app link -->
+    <div class="w-full max-w-2xl">
+        <a href="index.html" id="backToAppLink" class="text-xs font-mono text-gray-400 hover:text-tactical-accent transition inline-flex items-center gap-1.5">
+            <i id="backToAppIcon" class="fa-solid fa-arrow-right"></i>
+            <span id="backToAppText">العودة إلى المحاكي</span>
+        </a>
+    </div>
+
+    <!-- Policy Content (rendered by JS) -->
+    <main id="policyContent" class="w-full max-w-2xl flex flex-col gap-4">
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-2xl py-3 border-t border-tactical-border flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-400 shrink-0 mt-2">
+        <div class="font-mono">
+            <span id="lastUpdatedLabel">آخر تحديث:</span>
+            <span id="lastUpdatedValue">23 سبتمبر 2026</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span id="txtDevBy">تم التطوير بواسطة:</span>
+            <a href="https://www.instagram.com/hki_184/?hl=ar" target="_blank" rel="noopener noreferrer" class="text-tactical-accent hover:text-white font-bold flex items-center gap-1.5 bg-tactical-panel px-3 py-1 rounded-lg border border-tactical-accent/40 hover:border-tactical-accent transition shadow-sm">
+                <i class="fa-brands fa-instagram text-pink-500 text-sm"></i>
+                <span>hakky</span>
+            </a>
+        </div>
+    </footer>
+
+    <script>
+        let currentLanguage = 'ar'; // 'ar' | 'en' | 'ru'
+
+        const content = {
+            ar: {
+                dir: 'rtl',
+                metaTitle: 'سياسة الخصوصية - TAC-184',
+                langName: 'العربية',
+                headerTitle: 'سياسة الخصوصية',
+                headerSubtitle: 'محاكي اللاسلكي الميداني TAC-184',
+                backToApp: 'العودة إلى المحاكي',
+                lastUpdatedLabel: 'آخر تحديث:',
+                lastUpdatedValue: '23 سبتمبر 2026',
+                developedBy: 'تم التطوير بواسطة:',
+                sections: [
+                    {
+                        icon: 'fa-solid fa-circle-info',
+                        title: 'نظرة عامة',
+                        body: [
+                            'محاكي اللاسلكي الميداني TAC-184 تطبيق ويب تفاعلي يعمل بالكامل من داخل متصفحك، صُمم لأغراض المحاكاة والتدريب والتعليم فقط، ولا يمثّل جهاز اتصال حقيقيًا أو أداة استطلاع فعلية.',
+                            'توضّح هذه الصفحة كيف يتعامل الموقع مع أي معلومات قد يصل إليها متصفحك أثناء الاستخدام، وقد تُحدَّث بشكل دوري لتعكس أي تطوير على وظائف المحاكي.'
+                        ]
+                    },
+                    {
+                        icon: 'fa-solid fa-shield-halved',
+                        title: 'لا نجمع بياناتك الشخصية',
+                        body: [
+                            'لا يحتوي هذا التطبيق على أي خادم أو قاعدة بيانات في الخلفية؛ فكل ما يحدث يبقى داخل متصفحك فقط.',
+                            'لا يُطلب منك إنشاء حساب، ولا يتم تسجيل اسمك أو بريدك الإلكتروني أو أي بيانات تعريف شخصية، ولا يستخدم الموقع ملفات تعريف الارتباط (Cookies) أو التخزين المحلي للمتصفح لتتبع نشاطك أو حفظه.'
+                        ]
+                    },
+                    {
+                        icon: 'fa-solid fa-sliders',
+                        title: 'الأذونات التي قد يطلبها المتصفح',
+                        body: ['تعتمد بعض ميزات المحاكي على أذونات يمنحها متصفحك، وتبقى جميعها داخل جهازك ولا تُرسَل إلى أي خادم:'],
+                        items: [
+                            {
+                                icon: 'fa-solid fa-microphone',
+                                subtitle: 'الميكروفون',
+                                text: 'يُستخدم إذن الميكروفون في ميزتَي "الضغط للتحدث (PTT)" والتسجيل الصوتي لتشغيل تأثيرات صوتية محلية فقط. أي تسجيل صوتي يبقى في ذاكرة المتصفح المؤقتة على جهازك ويُفقد بمجرد إغلاق الصفحة أو تحديثها.'
+                            },
+                            {
+                                icon: 'fa-solid fa-location-dot',
+                                subtitle: 'الموقع الجغرافي',
+                                text: 'عند تفعيل زر الاستغاثة (SOS)، قد يطلب المتصفح إذن الموقع لإدراج إحداثياتك التقريبية داخل رسالة مورس المعروضة والمُشغَّلة على صفحتك فقط. لا تُرسَل هذه الإحداثيات إلى أي مكان، لأن التطبيق لا يملك خادمًا يستقبلها من الأساس.'
+                            }
+                        ]
+                    },
+                    {
+                        icon: 'fa-solid fa-cloud',
+                        title: 'موارد الطرف الثالث',
+                        body: ['يحمّل الموقع مكتبات وخطوطًا من شبكات توصيل محتوى خارجية: Tailwind CSS، وFont Awesome، وGoogle Fonts. عند تحميل هذه الموارد قد تستقبل تلك الجهات بيانات تقنية معتادة (مثل عنوان IP ونوع المتصفح) وفق سياساتها الخاصة، دون أي دور لهذا الموقع في جمعها أو معالجتها.']
+                    },
+                    {
+                        icon: 'fa-solid fa-child',
+                        title: 'خصوصية الأطفال',
+                        body: ['هذا المحاكي موجّه للاستخدام العام وليس مخصصًا للأطفال، ولا يجمع بياناتهم عمدًا. وبما أن التطبيق لا يجمع أي بيانات شخصية من أي مستخدم أساسًا، فلا توجد بيانات أطفال يمكن جمعها.']
+                    },
+                    {
+                        icon: 'fa-solid fa-rotate',
+                        title: 'التعديلات على هذه السياسة',
+                        body: ['قد تُحدَّث هذه السياسة من وقت لآخر لتعكس أي تغييرات على وظائف الموقع. تاريخ آخر تحديث موضّح أسفل الصفحة، ويُنصح بمراجعتها بشكل دوري.']
+                    },
+                    {
+                        icon: 'fa-solid fa-palette',
+                        title: 'نبذة عن المطوّر',
+                        body: ['"hakky" مصمم ومطوّر شغوف، يستمتع ببناء تجارب محاكاة تفاعلية وأدوات اتصال ميدانية تمزج بين دقة التصميم والوظائف العملية. جاء محاكي TAC-184 كمشروع شخصي يعكس هذا الاهتمام بالتفاصيل التقنية والاتصالات التكتيكية.']
+                    },
+                    {
+                        icon: 'fa-solid fa-comment-dots',
+                        title: 'التواصل',
+                        body: ['لأي استفسار بخصوص هذه السياسة أو المحاكي، يمكن التواصل عبر حساب انستغرام الموضّح في تذييل الصفحة.']
+                    }
+                ]
+            },
+            en: {
+                dir: 'ltr',
+                metaTitle: 'Privacy Policy - TAC-184',
+                langName: 'English',
+                headerTitle: 'Privacy Policy',
+                headerSubtitle: 'TAC-184 Field Radio Simulator',
+                backToApp: 'Back to Simulator',
+                lastUpdatedLabel: 'Last updated:',
+                lastUpdatedValue: 'September 23, 2026',
+                developedBy: 'Developed by:',
+                sections: [
+                    {
+                        icon: 'fa-solid fa-circle-info',
+                        title: 'Overview',
+                        body: [
+                            'TAC-184 Field Radio Simulator is an interactive web application that runs entirely inside your browser, built for simulation, training, and educational purposes only. It does not represent a real communications device or an actual reconnaissance tool.',
+                            'This page explains how the site handles any information your browser may access while you use it, and may be updated periodically to reflect changes to the simulator\'s features.'
+                        ]
+                    },
+                    {
+                        icon: 'fa-solid fa-shield-halved',
+                        title: 'We Do Not Collect Your Personal Data',
+                        body: [
+                            'This application has no backend server or database — everything happens inside your own browser.',
+                            'You are never asked to create an account, and no name, email address, or other personal identifier is ever recorded. The site does not use cookies or browser local storage to track or save your activity.'
+                        ]
+                    },
+                    {
+                        icon: 'fa-solid fa-sliders',
+                        title: 'Permissions Your Browser May Request',
+                        body: ['A few features rely on permissions your browser grants, and all of them stay on your own device — nothing is sent to a server:'],
+                        items: [
+                            {
+                                icon: 'fa-solid fa-microphone',
+                                subtitle: 'Microphone',
+                                text: 'The microphone permission powers the "Push-to-Talk (PTT)" and voice-memo features to play local audio effects only. Any recorded audio stays in your browser\'s temporary memory and is discarded once you close or refresh the page.'
+                            },
+                            {
+                                icon: 'fa-solid fa-location-dot',
+                                subtitle: 'Location',
+                                text: 'When you activate the SOS button, your browser may request location access to include your approximate coordinates in the Morse-code message shown and played on your own screen. These coordinates are never sent anywhere, since the application has no server to receive them.'
+                            }
+                        ]
+                    },
+                    {
+                        icon: 'fa-solid fa-cloud',
+                        title: 'Third-Party Resources',
+                        body: ['The site loads libraries and fonts from external content delivery networks: Tailwind CSS, Font Awesome, and Google Fonts. Loading these resources may let those providers receive standard technical data (such as an IP address and browser type) under their own policies; this site has no role in collecting or processing that data.']
+                    },
+                    {
+                        icon: 'fa-solid fa-child',
+                        title: "Children's Privacy",
+                        body: ['This simulator is intended for a general audience and is not directed at children, nor does it knowingly collect their data. Since the application does not collect personal data from any user in the first place, there is no children\'s data to collect.']
+                    },
+                    {
+                        icon: 'fa-solid fa-rotate',
+                        title: 'Changes to This Policy',
+                        body: ['This policy may be updated occasionally to reflect changes to the site\'s features. The date of the last update is shown at the bottom of this page, and we recommend checking back periodically.']
+                    },
+                    {
+                        icon: 'fa-solid fa-palette',
+                        title: 'About the Developer',
+                        body: ['"hakky" is a passionate designer and developer who enjoys building interactive simulation experiences and field-communication tools that blend careful design with practical function. TAC-184 was built as a personal project reflecting that interest in technical detail and tactical communications.']
+                    },
+                    {
+                        icon: 'fa-solid fa-comment-dots',
+                        title: 'Contact',
+                        body: ['For any question about this policy or the simulator, feel free to reach out via the Instagram account linked in the page footer.']
+                    }
+                ]
+            },
+            ru: {
+                dir: 'ltr',
+                metaTitle: 'Политика конфиденциальности - TAC-184',
+                langName: 'Русский',
+                headerTitle: 'Политика конфиденциальности',
+                headerSubtitle: 'Симулятор рации TAC-184',
+                backToApp: 'Вернуться к симулятору',
+                lastUpdatedLabel: 'Последнее обновление:',
+                lastUpdatedValue: '23 сентября 2026',
+                developedBy: 'Разработано:',
+                sections: [
+                    {
+                        icon: 'fa-solid fa-circle-info',
+                        title: 'Обзор',
+                        body: [
+                            '«Симулятор тактической рации TAC-184» — интерактивное веб-приложение, работающее полностью внутри вашего браузера, созданное только для симуляции, обучения и образовательных целей. Оно не является настоящим устройством связи или средством разведки.',
+                            'Эта страница объясняет, как сайт обрабатывает любую информацию, к которой может обращаться ваш браузер во время использования, и может периодически обновляться с учётом изменений функций симулятора.'
+                        ]
+                    },
+                    {
+                        icon: 'fa-solid fa-shield-halved',
+                        title: 'Мы не собираем ваши персональные данные',
+                        body: [
+                            'У этого приложения нет серверной части или базы данных — всё происходит только внутри вашего браузера.',
+                            'От вас никогда не требуется создавать учётную запись, и никогда не сохраняются имя, адрес электронной почты или иные личные данные. Сайт не использует файлы cookie или локальное хранилище браузера для отслеживания или сохранения вашей активности.'
+                        ]
+                    },
+                    {
+                        icon: 'fa-solid fa-sliders',
+                        title: 'Разрешения, которые может запросить браузер',
+                        body: ['Некоторые функции используют разрешения браузера, и все они остаются на вашем устройстве — ничего не отправляется на сервер:'],
+                        items: [
+                            {
+                                icon: 'fa-solid fa-microphone',
+                                subtitle: 'Микрофон',
+                                text: 'Разрешение на микрофон используется функциями «Нажми и говори (PTT)» и голосовой заметки только для воспроизведения звуковых эффектов локально. Любая запись остаётся во временной памяти браузера и удаляется при закрытии или обновлении страницы.'
+                            },
+                            {
+                                icon: 'fa-solid fa-location-dot',
+                                subtitle: 'Местоположение',
+                                text: 'При активации кнопки SOS браузер может запросить доступ к геолокации, чтобы включить примерные координаты в сообщение кодом Морзе, отображаемое и воспроизводимое только на вашем экране. Эти координаты никуда не отправляются, поскольку у приложения нет сервера для их получения.'
+                            }
+                        ]
+                    },
+                    {
+                        icon: 'fa-solid fa-cloud',
+                        title: 'Сторонние ресурсы',
+                        body: ['Сайт загружает библиотеки и шрифты с внешних сетей доставки контента: Tailwind CSS, Font Awesome и Google Fonts. При загрузке этих ресурсов соответствующие поставщики могут получать стандартные технические данные (например, IP-адрес и тип браузера) согласно своим собственным политикам; этот сайт не участвует в сборе или обработке этих данных.']
+                    },
+                    {
+                        icon: 'fa-solid fa-child',
+                        title: 'Конфиденциальность детей',
+                        body: ['Симулятор предназначен для широкой аудитории и не ориентирован на детей, их данные не собираются намеренно. Поскольку приложение вообще не собирает персональные данные ни одного пользователя, детских данных для сбора не существует.']
+                    },
+                    {
+                        icon: 'fa-solid fa-rotate',
+                        title: 'Изменения в этой политике',
+                        body: ['Эта политика может периодически обновляться с учётом изменений функций сайта. Дата последнего обновления указана в нижней части страницы; рекомендуется периодически проверять её.']
+                    },
+                    {
+                        icon: 'fa-solid fa-palette',
+                        title: 'О разработчике',
+                        body: ['«hakky» — увлечённый дизайнер и разработчик, которому нравится создавать интерактивные симуляционные проекты и инструменты полевой связи, сочетающие продуманный дизайн с практичной функциональностью. TAC-184 создан как личный проект, отражающий этот интерес к техническим деталям и тактической связи.']
+                    },
+                    {
+                        icon: 'fa-solid fa-comment-dots',
+                        title: 'Контакты',
+                        body: ['По любым вопросам об этой политике или симуляторе можно обратиться через аккаунт Instagram, указанный в подвале страницы.']
+                    }
+                ]
+            }
+        };
+
+        function cycleLanguage() {
+            if (currentLanguage === 'ar') currentLanguage = 'en';
+            else if (currentLanguage === 'en') currentLanguage = 'ru';
+            else currentLanguage = 'ar';
+            renderPolicy();
+        }
+
+        function renderPolicy() {
+            const data = content[currentLanguage];
+
+            document.documentElement.setAttribute('dir', data.dir);
+            document.documentElement.setAttribute('lang', currentLanguage);
+            document.title = data.metaTitle;
+
+            document.getElementById('langText').innerText = data.langName;
+            document.getElementById('policyHeaderTitle').innerText = data.headerTitle;
+            document.getElementById('policyHeaderSubtitle').innerText = data.headerSubtitle;
+            document.getElementById('backToAppText').innerText = data.backToApp;
+            document.getElementById('backToAppIcon').className = data.dir === 'rtl' ? 'fa-solid fa-arrow-right' : 'fa-solid fa-arrow-left';
+            document.getElementById('lastUpdatedLabel').innerText = data.lastUpdatedLabel;
+            document.getElementById('lastUpdatedValue').innerText = data.lastUpdatedValue;
+            document.getElementById('txtDevBy').innerText = data.developedBy;
+
+            const main = document.getElementById('policyContent');
+            main.innerHTML = '';
+
+            data.sections.forEach((sec) => {
+                const panel = document.createElement('section');
+                panel.className = 'w-full bg-tactical-panel border border-tactical-border rounded-2xl p-4 sm:p-5 shadow-xl';
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'flex items-center gap-2 mb-3 border-b border-tactical-border pb-2';
+                const iconEl = document.createElement('i');
+                iconEl.className = sec.icon + ' text-tactical-accent text-base';
+                const titleEl = document.createElement('h2');
+                titleEl.className = 'text-sm sm:text-base font-bold text-white';
+                titleEl.textContent = sec.title;
+                headerDiv.appendChild(iconEl);
+                headerDiv.appendChild(titleEl);
+                panel.appendChild(headerDiv);
+
+                sec.body.forEach((p) => {
+                    const para = document.createElement('p');
+                    para.className = 'policy-p text-sm text-gray-300 mb-2 last:mb-0';
+                    para.textContent = p;
+                    panel.appendChild(para);
+                });
+
+                if (sec.items) {
+                    const list = document.createElement('div');
+                    list.className = 'space-y-2 mt-3';
+                    sec.items.forEach((item) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'bg-black/40 border border-tactical-border/70 rounded-xl p-3';
+
+                        const subHead = document.createElement('div');
+                        subHead.className = 'flex items-center gap-2 text-xs font-bold text-tactical-amber font-mono mb-1.5';
+                        const subIcon = document.createElement('i');
+                        subIcon.className = item.icon;
+                        const subTitle = document.createElement('span');
+                        subTitle.textContent = item.subtitle;
+                        subHead.appendChild(subIcon);
+                        subHead.appendChild(subTitle);
+
+                        const subText = document.createElement('p');
+                        subText.className = 'policy-p text-sm text-gray-300';
+                        subText.textContent = item.text;
+
+                        itemDiv.appendChild(subHead);
+                        itemDiv.appendChild(subText);
+                        list.appendChild(itemDiv);
+                    });
+                    panel.appendChild(list);
+                }
+
+                main.appendChild(panel);
+            });
+        }
+
+        window.onload = renderPolicy;
+    </script>
+</body>
+</html>
