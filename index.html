@@ -327,6 +327,10 @@
                     <label id="lblDelay" class="block text-xs text-gray-400 font-mono mb-1">وقت التأخير (بالثواني):</label>
                     <input type="number" id="morseDelayInput" value="5" min="1" max="3600" class="w-full bg-black/80 border border-gray-700 rounded-xl px-3 py-2 text-xs text-tactical-accent font-mono focus:border-tactical-accent outline-none" placeholder="5">
                 </div>
+                <div id="continuousIntervalContainer" class="hidden">
+                    <label id="lblContinuousInterval" class="block text-xs text-gray-400 font-mono mb-1">الفاصل بين كل بث (بالثواني):</label>
+                    <input type="number" id="morseContinuousInterval" value="30" min="1" max="3600" class="w-full bg-black/80 border border-gray-700 rounded-xl px-3 py-2 text-xs text-tactical-accent font-mono focus:border-tactical-accent outline-none" placeholder="30">
+                </div>
             </div>
 
             <!-- Text Message Input -->
@@ -387,7 +391,8 @@
         <div>
             محاكي اللاسلكي الميداني <span class="text-tactical-accent font-bold">184</span> &copy; 2026
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3 flex-wrap justify-center">
+            <a href="privacy.html" id="txtPrivacyLink" class="text-gray-400 hover:text-tactical-accent transition underline-offset-2 hover:underline">سياسة الخصوصية</a>
             <span id="txtDevBy">تم التطوير بواسطة:</span>
             <a href="https://www.instagram.com/hki_184/?hl=ar" target="_blank" rel="noopener noreferrer" class="text-tactical-accent hover:text-white font-bold flex items-center gap-1.5 bg-tactical-panel px-3 py-1 rounded-lg border border-tactical-accent/40 hover:border-tactical-accent transition shadow-sm">
                 <i class="fa-brands fa-instagram text-pink-500 text-sm"></i>
@@ -463,13 +468,15 @@
                 modeDelay: 'تأخير زمني (مؤقت)',
                 modeContinuous: 'بث مستمر (تكرار)',
                 delayLabel: 'وقت التأخير (بالثواني):',
+                continuousIntervalLabel: 'الفاصل بين كل بث (بالثواني):',
                 transmitBtn: 'بث شفرة مورس عبر القناة',
                 stopMorseBtn: 'إيقاف البث',
                 logHeader: 'سجل اتصالات اللاسلكي',
                 clearLog: 'مسح السجل',
                 printLog: 'طباعة السجل',
                 logStartMsg: '[184.000 MHz] تم تشغيل المحاكي. التمرير الرأسي وعجلة الصوت مفعّلة بنجاح.',
-                developedBy: 'تم التطوير بواسطة:'
+                developedBy: 'تم التطوير بواسطة:',
+                privacyLink: 'سياسة الخصوصية'
             },
             en: {
                 dir: 'ltr',
@@ -508,13 +515,15 @@
                 modeDelay: 'Delayed Send (Timer)',
                 modeContinuous: 'Continuous Loop',
                 delayLabel: 'Delay Time (Seconds):',
+                continuousIntervalLabel: 'Repeat Interval (Seconds):',
                 transmitBtn: 'Transmit Morse Code',
                 stopMorseBtn: 'Stop Transmission',
                 logHeader: 'Comms Activity Log',
                 clearLog: 'Clear Log',
                 printLog: 'Print Log',
                 logStartMsg: '[184.000 MHz] Simulator initialized. Volume wheel & scrolling active.',
-                developedBy: 'Developed by:'
+                developedBy: 'Developed by:',
+                privacyLink: 'Privacy Policy'
             },
             ru: {
                 dir: 'ltr',
@@ -553,13 +562,15 @@
                 modeDelay: 'Отложенная (Таймер)',
                 modeContinuous: 'Непрерывный повтор',
                 delayLabel: 'Задержка (в секундах):',
+                continuousIntervalLabel: 'Интервал повтора (в секундах):',
                 transmitBtn: 'Передать код Морзе',
                 stopMorseBtn: 'Остановить',
                 logHeader: 'Журнал радиосвязи',
                 clearLog: 'Очистить',
                 printLog: 'Печать',
                 logStartMsg: '[184.000 МГц] Симулятор запущен. Прокрутка и громкость активны.',
-                developedBy: 'Разработано:'
+                developedBy: 'Разработано:',
+                privacyLink: 'Политика конфиденциальности'
             }
         };
 
@@ -645,12 +656,14 @@
             document.getElementById('optModeDelay').innerText = langData.modeDelay;
             document.getElementById('optModeContinuous').innerText = langData.modeContinuous;
             document.getElementById('lblDelay').innerText = langData.delayLabel;
+            document.getElementById('lblContinuousInterval').innerText = langData.continuousIntervalLabel;
             document.getElementById('txtTransmitBtn').innerText = langData.transmitBtn;
             document.getElementById('txtStopMorseBtn').innerText = langData.stopMorseBtn;
             document.getElementById('hdrLog').innerText = langData.logHeader;
             document.getElementById('txtClearLog').innerText = langData.clearLog;
             document.getElementById('txtPrintLog').innerText = langData.printLog;
             document.getElementById('txtDevBy').innerText = langData.developedBy;
+            document.getElementById('txtPrivacyLink').innerText = langData.privacyLink;
 
             setupTargetChannelsSelect();
         }
@@ -884,11 +897,9 @@
         function handleMorseModeChange() {
             const mode = document.getElementById('morseModeSelect').value;
             const delayContainer = document.getElementById('delayInputContainer');
-            if (mode === 'delay') {
-                delayContainer.classList.remove('hidden');
-            } else {
-                delayContainer.classList.add('hidden');
-            }
+            const intervalContainer = document.getElementById('continuousIntervalContainer');
+            delayContainer.classList.toggle('hidden', mode !== 'delay');
+            intervalContainer.classList.toggle('hidden', mode !== 'continuous');
         }
 
         async function startMorseTransmissionProcess() {
@@ -921,16 +932,20 @@
                 }, 1000);
 
             } else if (mode === 'continuous') {
+                let intervalSeconds = parseFloat(document.getElementById('morseContinuousInterval').value);
+                if (!intervalSeconds || intervalSeconds < 1) intervalSeconds = 30;
+                const intervalMs = intervalSeconds * 1000;
+
                 isContinuousMorseActive = true;
                 document.getElementById('stopMorseBtn').classList.remove('hidden');
                 document.getElementById('transmitMorseBtn').disabled = true;
 
-                addCommsLog(`[بث مستمر] تم تفعيل الإرسال المستمر لشفرة مورس...`, 'tx');
+                addCommsLog(`[بث مستمر] تم تفعيل التكرار كل ${intervalSeconds} ثانية...`, 'tx');
 
                 while (isContinuousMorseActive) {
                     await transmitMorseCodeOnce();
                     if (!isContinuousMorseActive) break;
-                    await sleep(1500); // 1.5 second gap between continuous broadcasts
+                    await sleep(intervalMs); // فاصل زمني يحدده المستخدم بين كل بث متكرر
                 }
             }
         }
@@ -1236,10 +1251,20 @@
             }
         }
 
+        // وقت فعلي حقيقي بصيغة 24 ساعة (HH:MM:SS) بأرقام لاتينية ثابتة،
+        // بعيدًا عن اختلاف تنسيق الأرقام حسب لغة الواجهة الحالية
+        function getLiveTimestamp() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            return `${hh}:${mm}:${ss}`;
+        }
+
         function addCommsLog(msg, type = 'info') {
             const commsLog = document.getElementById('commsLog');
             const entry = document.createElement('div');
-            const timeStr = new Date().toLocaleTimeString('ar-EG', { hour12: false });
+            const timeStr = getLiveTimestamp();
 
             let borderClass = 'border-tactical-accent';
             let bgClass = 'bg-black/50';
